@@ -89,6 +89,7 @@ struct ActiveWorkoutView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel("More options")
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Finish") { showFinish = true }
@@ -160,6 +161,7 @@ struct ActiveWorkoutView: View {
             Image(systemName: "trophy.fill")
                 .font(.title3)
                 .foregroundStyle(.yellow)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("New personal record!")
                     .font(.subheadline.weight(.bold))
@@ -203,6 +205,8 @@ struct ActiveWorkoutView: View {
                         .font(.system(size: 40, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .contentTransition(.numericText())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: Theme.Spacing.xs) {
@@ -218,6 +222,8 @@ struct ActiveWorkoutView: View {
             Text(value).font(.headline.weight(.bold))
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(value) \(label)")
     }
 
     private var elapsed: TimeInterval {
@@ -302,6 +308,7 @@ struct ActiveWorkoutView: View {
             Image(systemName: "dumbbell")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Text("No exercises yet")
                 .font(.headline)
             Text("Add your first exercise to start logging sets.")
@@ -350,6 +357,7 @@ struct ActiveWorkoutView: View {
                 Image(systemName: "circle")
                     .font(.body)
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.displayName)
                         .font(.subheadline.weight(.semibold))
@@ -361,11 +369,13 @@ struct ActiveWorkoutView: View {
                 Spacer(minLength: Theme.Spacing.s)
                 Image(systemName: "plus.circle.fill")
                     .foregroundStyle(Color.accentColor)
+                    .accessibilityHidden(true)
             }
             .contentShape(Rectangle())
             .padding(.vertical, 2)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Log planned \(item.displayName), \(item.targetSummary)")
     }
 
     private func loadActiveTemplate() {

@@ -178,6 +178,7 @@ private struct WorkoutHistoryRow: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .labelStyle(.titleAndIcon)
+            .accessibilityElement(children: .combine)
         }
         .padding(.vertical, 2)
     }

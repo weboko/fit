@@ -47,6 +47,22 @@ struct MetricLineChart: View {
                 }
             }
             .frame(height: 180)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Trend chart")
+            .accessibilityValue(accessibilitySummary)
         }
+    }
+
+    /// A concise spoken summary of the plotted trend (first/last values and
+    /// direction) so VoiceOver users get the gist without exploring every point.
+    private var accessibilitySummary: String {
+        guard let first = points.first, let last = points.last else { return "No data" }
+        let direction: String
+        if last.value > first.value { direction = "up" }
+        else if last.value < first.value { direction = "down" }
+        else { direction = "flat" }
+        let from = "\(Format.decimal(first.value))\(unitSuffix)"
+        let to = "\(Format.decimal(last.value))\(unitSuffix)"
+        return "\(points.count) points, trending \(direction), from \(from) to \(to)"
     }
 }

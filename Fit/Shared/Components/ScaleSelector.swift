@@ -44,6 +44,8 @@ struct ScaleSelector: View {
                             .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("\(title ?? "Value") \(i), \(labelProvider(i))")
+                    .accessibilityAddTraits(value == i ? [.isSelected] : [])
                 }
             }
             Text(value.map(labelProvider) ?? "Not entered")

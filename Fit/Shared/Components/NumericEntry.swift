@@ -22,9 +22,11 @@ struct WeightStepperField: View {
                     .frame(maxWidth: .infinity, minHeight: Theme.Size.bigControlHeight)
                     .background(Theme.Palette.subtle)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
+                    .accessibilityLabel("Weight in \(unit.symbol)")
                 Text(unit.symbol)
                     .font(.headline)
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
             }
 
             HStack(spacing: Theme.Spacing.xs) {
@@ -90,6 +92,9 @@ struct WeightStepperField: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(deltaInUnit > 0
+            ? "Add \(Format.decimal(deltaInUnit)) \(unit.symbol)"
+            : "Subtract \(Format.decimal(abs(deltaInUnit))) \(unit.symbol)")
     }
 
     private func syncTextFromValue() {
@@ -107,7 +112,7 @@ struct RepsStepperField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
             HStack(spacing: Theme.Spacing.s) {
-                stepButton("−") { adjust(-1) }
+                stepButton("−", accessibilityLabel: "Decrease reps") { adjust(-1) }
                 TextField("0", text: $text)
                     .keyboardType(.numberPad)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -115,7 +120,8 @@ struct RepsStepperField: View {
                     .frame(maxWidth: .infinity, minHeight: Theme.Size.bigControlHeight)
                     .background(Theme.Palette.subtle)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
-                stepButton("+") { adjust(1) }
+                    .accessibilityLabel("Reps")
+                stepButton("+", accessibilityLabel: "Increase reps") { adjust(1) }
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.s) {
@@ -154,7 +160,7 @@ struct RepsStepperField: View {
         text = String(next)
     }
 
-    private func stepButton(_ symbol: String, action: @escaping () -> Void) -> some View {
+    private func stepButton(_ symbol: String, accessibilityLabel: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(symbol)
                 .font(.title2.weight(.bold))
@@ -163,5 +169,6 @@ struct RepsStepperField: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
     }
 }

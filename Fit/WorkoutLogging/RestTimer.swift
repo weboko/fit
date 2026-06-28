@@ -104,15 +104,18 @@ struct RestTimerBar: View {
                     .monospacedDigit()
                     .contentTransition(.numericText())
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Rest remaining")
+            .accessibilityValue(Format.duration(model.remaining))
 
             ProgressView(value: model.progress)
                 .tint(Color.accentColor)
 
             HStack(spacing: Theme.Spacing.s) {
-                adjustButton(label: "−15s", systemImage: "gobackward.15") {
+                adjustButton(label: "−15s", systemImage: "gobackward.15", accessibilityLabel: "Subtract 15 seconds") {
                     model.add(-15)
                 }
-                adjustButton(label: "+15s", systemImage: "goforward.15") {
+                adjustButton(label: "+15s", systemImage: "goforward.15", accessibilityLabel: "Add 15 seconds") {
                     model.add(15)
                 }
                 Button {
@@ -133,7 +136,7 @@ struct RestTimerBar: View {
         .padding(.bottom, Theme.Spacing.s)
     }
 
-    private func adjustButton(label: String, systemImage: String, action: @escaping () -> Void) -> some View {
+    private func adjustButton(label: String, systemImage: String, accessibilityLabel: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(label, systemImage: systemImage)
                 .font(.subheadline.weight(.semibold))
@@ -142,6 +145,7 @@ struct RestTimerBar: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
     }
 }
 

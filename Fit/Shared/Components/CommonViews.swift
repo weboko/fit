@@ -53,7 +53,9 @@ struct StatTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
             if let systemImage {
-                Image(systemName: systemImage).foregroundStyle(tint)
+                Image(systemName: systemImage)
+                    .foregroundStyle(tint)
+                    .accessibilityHidden(true)
             }
             Text(value)
                 .font(.title3.weight(.bold))
@@ -65,6 +67,8 @@ struct StatTile: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(value)")
     }
 }
 
@@ -150,5 +154,7 @@ struct SourceBadge: View {
             .background(tint.opacity(0.15))
             .foregroundStyle(tint)
             .clipShape(Capsule())
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(text)
     }
 }

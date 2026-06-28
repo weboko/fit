@@ -153,6 +153,9 @@ struct InsightsView: View {
                     }
                 }
                 .frame(height: 160)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Workouts per week chart")
+                .accessibilityValue("\(filteredSessions.count) workouts over \(weeklyPoints.count) weeks")
             }
         }
     }
@@ -196,6 +199,9 @@ struct InsightsView: View {
                     }
                 }
                 .frame(height: chartHeight(for: shown.count))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Volume by muscle group chart")
+                .accessibilityValue(volumeChartSummary(shown))
 
                 if ranked.count > topMuscleLimit {
                     Text("Showing top \(topMuscleLimit) of \(ranked.count) muscle groups.")
@@ -204,6 +210,12 @@ struct InsightsView: View {
                 }
             }
         }
+    }
+
+    /// Spoken summary for the volume chart: the leading muscle group and its kg.
+    private func volumeChartSummary(_ shown: [VolumeItem]) -> String {
+        guard let top = shown.first else { return "No data" }
+        return "Most volume: \(top.muscle.displayName), \(Format.decimal(top.value)) kg"
     }
 
     // MARK: - Sets by muscle group
@@ -245,6 +257,9 @@ struct InsightsView: View {
                     }
                 }
                 .frame(height: chartHeight(for: shown.count))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Sets by muscle group chart")
+                .accessibilityValue(setsChartSummary(shown))
 
                 if ranked.count > topMuscleLimit {
                     Text("Showing top \(topMuscleLimit) of \(ranked.count) muscle groups.")
@@ -253,6 +268,12 @@ struct InsightsView: View {
                 }
             }
         }
+    }
+
+    /// Spoken summary for the sets chart: the leading muscle group and its sets.
+    private func setsChartSummary(_ shown: [SetsItem]) -> String {
+        guard let top = shown.first else { return "No data" }
+        return "Most sets: \(top.muscle.displayName), \(top.value) sets"
     }
 
     // MARK: - Derived data

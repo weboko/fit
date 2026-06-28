@@ -52,6 +52,7 @@ struct WorkoutDetailView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel("Workout options")
             }
             ToolbarItem(placement: .topBarTrailing) {
                 WorkoutShareButton(session: session)
@@ -189,6 +190,7 @@ struct WorkoutDetailView: View {
                 Image(systemName: "flame")
                     .foregroundStyle(.orange)
                     .font(.caption)
+                    .accessibilityLabel("Warm-up")
             }
             Text(Format.setSummary(set))
                 .font(.body.monospacedDigit())
@@ -199,9 +201,11 @@ struct WorkoutDetailView: View {
                 Text(EffortScale.shortLabel(for: effort))
                     .font(.caption)
                     .foregroundStyle(Theme.Palette.intensity(effort))
+                    .accessibilityLabel("Effort \(effort), \(EffortScale.label(for: effort))")
             }
             if set.isFailed {
                 Image(systemName: "xmark.circle").foregroundStyle(.red).font(.caption)
+                    .accessibilityLabel("Failed set")
             }
             if set.source == .edited || set.source == .backfilled {
                 SourceBadge(text: set.source.displayName, systemImage: "pencil.circle")
@@ -209,6 +213,7 @@ struct WorkoutDetailView: View {
             Image(systemName: "chevron.right")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
         }
         .contentShape(Rectangle())
         .padding(.vertical, 2)
