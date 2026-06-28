@@ -14,8 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F22 — CSV import** (`feat-f22-csv-import`)
-  Import the multi-CSV export back into the store (complements F11's JSON import).
+_(idle — next item picked by the autonomous loop / cron heartbeat)_
 
 ## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
 - [ ] **F13 — Heart-rate zones in export + summary**
@@ -53,8 +52,8 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F20 — Per-exercise rest** — optional per-exercise rest duration (UserDefaults by id), used by the active timer. PR #15 (merged).
 - [x] **F15 — Onboarding flow** — first-run paged explainer (privacy/units/Health/starter exercises), shown once. PR #16 (merged).
 - [x] **F17 — Accessibility pass** — VoiceOver labels/traits, combined elements, chart summaries, Dynamic Type guards across shared components + key screens. PR #17 (merged).
+- [x] **F22 — CSV import** — RFC-4180 parser + multi-CSV upsert-by-id restore (no deletes), multi-file fileImporter. PR #18 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
-- [x] **F22 — CSV import**
-  Import the multi-CSV export back into the store (complements F11's JSON import).
+- [x] **F22 — CSV import** — done; see Done section (PR #18).
