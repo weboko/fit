@@ -14,13 +14,12 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F9 — "Repeat last workout" / quick start** (`feat-f9-repeat-workout`)
-  Start a new session pre-populated from the most recent workout (reuses the F4
-  template "planned" flow via a single auto-managed quick-start template).
+- [ ] **F10 — Superset / circuit grouping** (`feat-f10-supersets`)
+  Allow grouping exercises within a session as a superset for logging order.
+  Scope: optional `supersetGroup` on a set + tagging in set entry + badges in
+  active workout & history. Export of the field split to F21.
 
 ## Now (next up)
-- [ ] **F10 — Superset / circuit grouping**
-  Allow grouping exercises within a session as a superset for logging order.
 
 ## Later
 - [ ] **F11 — CSV/JSON import (restore from a prior export)**
@@ -49,9 +48,13 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F6 — Body-weight tracking** — trend chart + manual entry editor, Apple Health badge, feeds bodyweight set default. Settings → Tracking. PR #7 (merged).
 - [x] **F7 — Insights analytics** — frequency + per-muscle volume/sets charts over a time range, third History mode. PR #8 (merged).
 - [x] **F8 — Plate calculator** — greedy per-side plate math + view, reachable from external-mode set entry. PR #9 (merged).
+- [x] **F9 — Repeat last workout** — quick-start from the most recent workout via an auto-managed template, reusing the planned flow. PR #10 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
 - [ ] **F20 — Per-exercise default rest override**
   Optional per-exercise rest duration; the active workout reads it when present,
   falling back to the global default. (Follow-up split out of F19.)
+- [ ] **F21 — Superset group in export (CSV/JSON)**
+  Add the `superset_group` column to sets.csv and the JSON set objects once F10
+  lands the field. (Follow-up split out of F10.)
