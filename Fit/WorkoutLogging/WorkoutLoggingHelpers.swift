@@ -253,6 +253,7 @@ struct LoggedSetRow: View {
             .frame(width: 26, height: 26)
             .background(Theme.Palette.intensity(value))
             .clipShape(Circle())
+            .accessibilityLabel("Effort \(value), \(EffortScale.label(for: value))")
     }
 }
 

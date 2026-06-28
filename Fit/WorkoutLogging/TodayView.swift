@@ -123,6 +123,7 @@ struct TodayView: View {
                 .font(.system(size: 56))
                 .foregroundStyle(Color.accentColor)
                 .padding(.top, Theme.Spacing.xl)
+                .accessibilityHidden(true)
             Text(greeting)
                 .font(.title2.weight(.bold))
             Text("Ready to train?")

@@ -72,6 +72,7 @@ struct ExercisePickerView: View {
                         .foregroundStyle(.primary)
                     if exercise.isGoalExercise {
                         Image(systemName: "target").font(.caption).foregroundStyle(.orange)
+                            .accessibilityLabel("Goal exercise")
                     }
                 }
                 if let category = exercise.category {

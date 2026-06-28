@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)** (`feat-f17-accessibility`)
+- [x] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)** (`feat-f17-accessibility`)
   Audit large screens; add VoiceOver labels/traits, dynamic-type-friendly layouts.
 
 ## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
