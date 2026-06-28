@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F8 — Plate calculator** (`feat-f8-plate-calculator`)
+- [x] **F8 — Plate calculator** (`feat-f8-plate-calculator`)
   Given a target barbell load and a bar weight + available plates, show the plate
   breakdown per side. Pure utility, reachable from set entry.
 

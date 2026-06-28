@@ -39,6 +39,7 @@ struct SetEntryView: View {
     @State private var note = ""
 
     @State private var didLoadDefaults = false
+    @State private var showPlateCalculator = false
 
     var body: some View {
         NavigationStack {
@@ -61,6 +62,9 @@ struct SetEntryView: View {
                 }
             }
             .onAppear(perform: loadDefaultsIfNeeded)
+            .sheet(isPresented: $showPlateCalculator) {
+                PlateCalculatorView(targetKg: weightKg)
+            }
         }
     }
 
@@ -101,6 +105,7 @@ struct SetEntryView: View {
             switch weightMode {
             case .external:
                 weightField(label: nil, binding: $weightKg)
+                plateCalculatorButton
             case .bodyweight:
                 Text("Pure bodyweight — just log reps below.")
                     .font(.footnote)
@@ -185,6 +190,19 @@ struct SetEntryView: View {
                                recentKg: WorkoutLoggingHelpers.recentLoadsKg(for: exercise))
         }
         .padding(.vertical, Theme.Spacing.xs)
+    }
+
+    /// Opens the plate calculator pre-filled with the current external load.
+    /// Only meaningful for `.external` mode (barbell-style loading).
+    private var plateCalculatorButton: some View {
+        Button {
+            showPlateCalculator = true
+        } label: {
+            Label("Plate calculator", systemImage: "circle.grid.2x2")
+                .font(.subheadline.weight(.medium))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Theme.Palette.accent)
     }
 
     private var bodyWeightField: some View {
