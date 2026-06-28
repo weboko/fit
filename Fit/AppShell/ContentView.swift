@@ -14,6 +14,10 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var context
 
+    /// First-run onboarding gate (F15). Shown once via a full-screen cover until
+    /// the user finishes or skips, after which it never appears again.
+    @AppStorage(AppSettingsKeys.hasOnboarded) private var hasOnboarded = false
+
     var body: some View {
         TabView {
             TodayView()
@@ -33,6 +37,12 @@ struct ContentView: View {
         }
         .task {
             SeedData.seedIfNeeded(in: context)
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { !hasOnboarded },
+            set: { showing in if !showing { hasOnboarded = true } }
+        )) {
+            OnboardingView(onFinish: { hasOnboarded = true })
         }
     }
 }
