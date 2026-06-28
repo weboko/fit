@@ -21,6 +21,11 @@ struct DataManagementView: View {
     @State private var importSummary: ImportSummary?
     @State private var importErrorMessage: String?
 
+    // CSV import (F22) state.
+    @State private var showCSVImporter = false
+    @State private var showCSVImportConfirmation = false
+    @State private var pendingCSVURLs: [URL] = []
+
     var body: some View {
         Form {
             countsSection
@@ -46,6 +51,12 @@ struct DataManagementView: View {
             Button("Cancel", role: .cancel) { pendingImportURL = nil }
         } message: {
             Text("This merges the file into your data by matching on id: existing records are updated and new ones are added. Nothing is deleted. Your current data stays unless the file contains a record with the same id.")
+        }
+        .alert("Restore from these CSV files?", isPresented: $showCSVImportConfirmation) {
+            Button("Import", action: runCSVImport)
+            Button("Cancel", role: .cancel) { pendingCSVURLs = [] }
+        } message: {
+            Text("This merges the selected CSV files (workouts.csv, sets.csv, exercises.csv, …) into your data by matching on id: existing records are updated and new ones are added. Nothing is deleted.")
         }
         .alert("Import complete", isPresented: importSummaryBinding) {
             Button("OK", role: .cancel) { importSummary = nil }
@@ -111,10 +122,23 @@ struct DataManagementView: View {
                 Label("Import data…", systemImage: "square.and.arrow.down")
             }
             .disabled(isWorking)
+            Button {
+                showCSVImporter = true
+            } label: {
+                Label("Import CSV…", systemImage: "tablecells")
+            }
+            .disabled(isWorking)
         } header: {
             Text("Restore")
         } footer: {
-            Text("Restores a previously exported JSON file (fit_export.json). It merges by id — existing records are updated, new ones added, and nothing is ever deleted. Everything stays on this device.")
+            Text("Restores a previously exported JSON file (fit_export.json) or the multi-CSV export (workouts.csv, sets.csv, exercises.csv, …). Both merge by id — existing records are updated, new ones added, and nothing is ever deleted. Everything stays on this device.")
+        }
+        .fileImporter(
+            isPresented: $showCSVImporter,
+            allowedContentTypes: [.commaSeparatedText, .plainText],
+            allowsMultipleSelection: true
+        ) { result in
+            handlePickedCSVFiles(result)
         }
     }
 
@@ -209,6 +233,52 @@ struct DataManagementView: View {
         do {
             let data = try Data(contentsOf: url)
             let summary = try DataImportService().importJSON(data, into: context)
+            importSummary = summary
+            refreshCounts()
+        } catch {
+            importErrorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - CSV import actions (F22)
+
+    /// Capture the picked CSV URLs and ask for confirmation before touching data.
+    private func handlePickedCSVFiles(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard !urls.isEmpty else { return }
+            pendingCSVURLs = urls
+            showCSVImportConfirmation = true
+        case .failure(let error):
+            importErrorMessage = error.localizedDescription
+        }
+    }
+
+    /// Read each confirmed CSV file (keyed by its filename) and run the merge.
+    /// Each URL lives outside the app sandbox, so we hold a security-scoped
+    /// resource for the duration of its read. The engine only inserts/updates.
+    private func runCSVImport() {
+        let urls = pendingCSVURLs
+        pendingCSVURLs = []
+        guard !urls.isEmpty else { return }
+        isWorking = true
+        defer { isWorking = false }
+
+        var filesByName: [String: String] = [:]
+        for url in urls {
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
+            filesByName[url.lastPathComponent.lowercased()] = text
+        }
+
+        guard !filesByName.isEmpty else {
+            importErrorMessage = "None of the selected files could be read as text."
+            return
+        }
+
+        do {
+            let summary = try CSVImportService().importCSVFiles(filesByName, into: context)
             importSummary = summary
             refreshCounts()
         } catch {
