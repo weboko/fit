@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F18 — Rest-day / training calendar heatmap** (`feat-f18-heatmap`)
+- [x] **F18 — Rest-day / training calendar heatmap** (`feat-f18-heatmap`)
   GitHub-style heatmap of training days over recent weeks, shown in Insights.
 
 ## Now (next up)
