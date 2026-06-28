@@ -19,6 +19,8 @@ enum PersistenceController {
         BodyWeightEntry.self,
         SleepEntry.self,
         JournalEntry.self,
+        WorkoutTemplate.self,
+        TemplateItem.self,
     ])
 
     /// Builds the shared container used by the app.

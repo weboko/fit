@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F4 — Workout templates / routines** (`feat-f4-templates`)
+- [x] **F4 — Workout templates / routines** (`feat-f4-templates`)
   Save a workout as a reusable template (ordered exercises + target sets); start
   a new workout from a template, pre-creating the exercise list.
 

@@ -147,6 +147,9 @@ struct FinishWorkoutView: View {
 
         saveNote()
         WorkoutLoggingHelpers.finishSession(session, in: context)
+        // The workout is over; drop any template link so the planned section
+        // does not reappear for a future session (F4).
+        TemplateSupport.clearActiveTemplate()
         dismiss()
     }
 

@@ -34,6 +34,11 @@ struct ActiveWorkoutView: View {
     @State private var showQuestionnaire = false
     @State private var showDiscardConfirm = false
 
+    // F4: planned exercises from the template this workout was started from.
+    // Strictly additive — does not touch the rest timer (F1) or PR (F2) paths.
+    @State private var activeTemplate: WorkoutTemplate?
+    @State private var plannedEntryTarget: PlannedSetTarget?
+
     private enum PickerMode: Identifiable {
         case addExercise
         var id: Int { 0 }
@@ -47,6 +52,8 @@ struct ActiveWorkoutView: View {
                 }
 
                 timerHeader
+
+                plannedCard
 
                 if session.exercisesInOrder.isEmpty {
                     emptyState
@@ -90,7 +97,10 @@ struct ActiveWorkoutView: View {
                 RestTimerBar(model: restTimer)
             }
         }
-        .onAppear { savedSetCount = session.orderedSets.count }
+        .onAppear {
+            savedSetCount = session.orderedSets.count
+            loadActiveTemplate()
+        }
         .onReceive(ticker) { value in
             now = value
             restTimer.tick()
@@ -112,6 +122,9 @@ struct ActiveWorkoutView: View {
         }
         .sheet(item: $setEntryTarget) { exercise in
             SetEntryView(session: session, exercise: exercise)
+        }
+        .sheet(item: $plannedEntryTarget) { target in
+            SetEntryView(session: session, exercise: target.exercise, prefill: target.prefill)
         }
         .sheet(isPresented: $showQuestionnaire) {
             NavigationStack {
@@ -291,6 +304,72 @@ struct ActiveWorkoutView: View {
         .padding(.vertical, Theme.Spacing.xl)
     }
 
+    // MARK: - Planned (from template) — F4, strictly additive
+
+    /// The remaining planned items for the active template, or empty if this
+    /// workout was not started from one (or everything is already logged).
+    private var remainingPlannedItems: [TemplateItem] {
+        guard let template = activeTemplate else { return [] }
+        return TemplateSupport.remainingItems(of: template, in: session)
+    }
+
+    /// The "Planned (from template)" card, shown only while planned exercises
+    /// remain to be logged.
+    @ViewBuilder
+    private var plannedCard: some View {
+        let items = remainingPlannedItems
+        if let template = activeTemplate, !items.isEmpty {
+            SectionCard("Planned · \(template.displayName)", systemImage: "list.bullet.rectangle.portrait") {
+                VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                    Text("Tap to log a planned exercise with its target pre-filled.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ForEach(items) { item in
+                        plannedRow(item)
+                        if item.id != items.last?.id { Divider() }
+                    }
+                }
+            }
+        }
+    }
+
+    private func plannedRow(_ item: TemplateItem) -> some View {
+        Button {
+            startPlanned(item)
+        } label: {
+            HStack(spacing: Theme.Spacing.m) {
+                Image(systemName: "circle")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.displayName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(item.targetSummary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: Theme.Spacing.s)
+                Image(systemName: "plus.circle.fill")
+                    .foregroundStyle(Color.accentColor)
+            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 2)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func loadActiveTemplate() {
+        activeTemplate = TemplateSupport.activeTemplate(for: session, in: context)
+    }
+
+    /// Opens set entry for a planned item, pre-filled from its target. The
+    /// planned item must resolve to a concrete exercise to log against.
+    private func startPlanned(_ item: TemplateItem) {
+        guard let exercise = item.exercise else { return }
+        plannedEntryTarget = PlannedSetTarget(exercise: exercise, prefill: SetPrefill(item: item))
+    }
+
     // MARK: - Actions
 
     private func delete(_ set: WorkoutSet) {
@@ -302,6 +381,8 @@ struct ActiveWorkoutView: View {
     private func discard() {
         context.delete(session)
         try? context.save()
+        // Drop the template link so a future workout starts clean (F4).
+        TemplateSupport.clearActiveTemplate()
     }
 
     // MARK: - PR detection
@@ -335,6 +416,15 @@ struct ActiveWorkoutView: View {
     private var newestSet: WorkoutSet? {
         session.orderedSets.last
     }
+}
+
+/// Identifies a planned-exercise set-entry sheet (F4): the exercise to log and
+/// the target to pre-fill it with. Kept separate from the plain `setEntryTarget`
+/// so the existing add-set flow is untouched.
+struct PlannedSetTarget: Identifiable {
+    let exercise: Exercise
+    let prefill: SetPrefill
+    var id: UUID { exercise.id }
 }
 
 #Preview {
