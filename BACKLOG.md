@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F1 — Rest timer** (`feat-f1-rest-timer`)
+- [x] **F1 — Rest timer** (`feat-f1-rest-timer`)
 
 ## Now (next up)
 - [ ] **F2 — Personal records (PR) detection & celebration**

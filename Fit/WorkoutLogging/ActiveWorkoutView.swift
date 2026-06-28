@@ -14,6 +14,11 @@ struct ActiveWorkoutView: View {
     @State private var now = Date()
     private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
+    /// In-app rest countdown, started when a set is saved.
+    @State private var restTimer = RestTimerModel()
+    /// Tracks the set count so we can detect a freshly-saved set.
+    @State private var savedSetCount = 0
+
     // Sheet routing
     @State private var pickerMode: PickerMode?
     @State private var setEntryTarget: Exercise?
@@ -68,7 +73,23 @@ struct ActiveWorkoutView: View {
                     .fontWeight(.semibold)
             }
         }
-        .onReceive(ticker) { now = $0 }
+        .safeAreaInset(edge: .bottom) {
+            if restTimer.isRunning {
+                RestTimerBar(model: restTimer)
+            }
+        }
+        .onAppear { savedSetCount = session.orderedSets.count }
+        .onReceive(ticker) { value in
+            now = value
+            restTimer.tick()
+        }
+        .onChange(of: session.orderedSets.count) { _, newCount in
+            // A newly-saved set starts the rest countdown for the default length.
+            if newCount > savedSetCount {
+                restTimer.start(RestTimerDefaults.defaultRestSeconds)
+            }
+            savedSetCount = newCount
+        }
         .sheet(item: $pickerMode) { _ in
             ExercisePickerView { exercise in
                 // Open set entry immediately after choosing.
