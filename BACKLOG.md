@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F3 — Goal trackers screen (Bench 100 kg, Pull-ups)** (`feat-f3-goal-trackers`)
+- [x] **F3 — Goal trackers screen (Bench 100 kg, Pull-ups)** (`feat-f3-goal-trackers`)
   A dedicated screen surfacing goal exercises: best set, recent working weights,
   est-1RM trend, distance to target (configurable target kg / reps). No coaching.
 

@@ -75,6 +75,14 @@ struct ExerciseLibraryView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        GoalTrackerView()
+                    } label: {
+                        Image(systemName: "target")
+                    }
+                    .accessibilityLabel("Goal trackers")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {
                             createAndEditNew()

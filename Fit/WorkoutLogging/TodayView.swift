@@ -11,6 +11,9 @@ struct TodayView: View {
     @Query(sort: \WorkoutSession.startTime, order: .reverse)
     private var sessions: [WorkoutSession]
 
+    @Query(sort: \Exercise.canonicalName, order: .forward)
+    private var allExercises: [Exercise]
+
     @State private var showStartConfirm = false
 
     private var activeSession: WorkoutSession? {
@@ -19,6 +22,15 @@ struct TodayView: View {
 
     private var lastFinished: WorkoutSession? {
         sessions.first { $0.endTime != nil }
+    }
+
+    private var goalExercises: [Exercise] {
+        allExercises.filter { $0.isGoalExercise && !$0.archived }
+    }
+
+    /// The goal closest to completion (highest fraction), used for the teaser.
+    private var topGoal: Exercise? {
+        goalExercises.max { GoalTeaser.fraction(for: $0) < GoalTeaser.fraction(for: $1) }
     }
 
     var body: some View {
@@ -52,6 +64,10 @@ struct TodayView: View {
 
                 if let last = lastFinished {
                     lastWorkoutCard(last)
+                }
+
+                if !goalExercises.isEmpty {
+                    goalsCard
                 }
 
                 backfillLink
@@ -104,6 +120,40 @@ struct TodayView: View {
                 }
             }
         }
+    }
+
+    private var goalsCard: some View {
+        NavigationLink {
+            GoalTrackerView()
+        } label: {
+            SectionCard("Goals", systemImage: "target") {
+                if let goal = topGoal {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(goal.canonicalName)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Spacer(minLength: Theme.Spacing.s)
+                            Text(GoalTeaser.summary(for: goal))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        ProgressView(value: GoalTeaser.fraction(for: goal))
+                            .tint(.accentColor)
+                        if goalExercises.count > 1 {
+                            Text("+\(goalExercises.count - 1) more goal\(goalExercises.count - 1 == 1 ? "" : "s")")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } else {
+                    Text("Track your progress toward a target.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var backfillLink: some View {
