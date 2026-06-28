@@ -17,6 +17,10 @@ struct WorkoutDetailView: View {
     @State private var addingNote = false
     @State private var editingNote: JournalEntry?
 
+    // F4: save-as-template confirmation.
+    @State private var savedTemplateName: String?
+    @State private var showSavedTemplateAlert = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
@@ -33,11 +37,30 @@ struct WorkoutDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Edit") { showingEdit = true }
+                Menu {
+                    Button {
+                        showingEdit = true
+                    } label: {
+                        Label("Edit workout", systemImage: "pencil")
+                    }
+                    Button {
+                        saveAsTemplate()
+                    } label: {
+                        Label("Save as template", systemImage: "list.bullet.rectangle.portrait")
+                    }
+                    .disabled(session.exercisesInOrder.isEmpty)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
             }
             ToolbarItem(placement: .topBarTrailing) {
                 WorkoutShareButton(session: session)
             }
+        }
+        .alert("Template saved", isPresented: $showSavedTemplateAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(savedTemplateMessage)
         }
         .sheet(isPresented: $showingEdit) {
             WorkoutEditView(session: session)
@@ -240,6 +263,28 @@ struct WorkoutDetailView: View {
 
     private var sessionNotes: [JournalEntry] {
         (session.journalEntries ?? []).sorted { $0.timestamp > $1.timestamp }
+    }
+
+    // MARK: - Save as template (F4)
+
+    /// Builds a template from this session — one item per distinct exercise with
+    /// target sets/reps/weight from a representative top set — inserts it and
+    /// confirms with an alert.
+    private func saveAsTemplate() {
+        guard !session.exercisesInOrder.isEmpty else { return }
+        let template = TemplateSupport.makeTemplate(from: session)
+        context.insert(template)
+        for item in template.items ?? [] {
+            context.insert(item)
+        }
+        try? context.save()
+        savedTemplateName = template.displayName
+        showSavedTemplateAlert = true
+    }
+
+    private var savedTemplateMessage: String {
+        let name = savedTemplateName ?? "Template"
+        return "“\(name)” was saved. Start a workout from it on the Today screen."
     }
 }
 

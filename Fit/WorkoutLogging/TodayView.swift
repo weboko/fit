@@ -15,6 +15,7 @@ struct TodayView: View {
     private var allExercises: [Exercise]
 
     @State private var showStartConfirm = false
+    @State private var showTemplateChooser = false
 
     private var activeSession: WorkoutSession? {
         WorkoutLoggingHelpers.activeSession(in: sessions)
@@ -62,6 +63,8 @@ struct TodayView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
 
+                templatesRow
+
                 if let last = lastFinished {
                     lastWorkoutCard(last)
                 }
@@ -78,6 +81,39 @@ struct TodayView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Today")
+        .sheet(isPresented: $showTemplateChooser) {
+            TemplateChooserView { template in
+                startFromTemplate(template)
+            }
+        }
+    }
+
+    /// F4: start-from-template entry plus a link to manage templates.
+    private var templatesRow: some View {
+        HStack(spacing: Theme.Spacing.m) {
+            Button {
+                showTemplateChooser = true
+            } label: {
+                Label("Start from template", systemImage: "list.bullet.rectangle.portrait")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: Theme.Size.controlHeight)
+                    .background(Color.accentColor.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
+                TemplatesView()
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.headline)
+                    .frame(width: Theme.Size.controlHeight, height: Theme.Size.controlHeight)
+                    .background(Theme.Palette.subtle)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Manage templates")
+        }
     }
 
     private var header: some View {
@@ -174,6 +210,13 @@ struct TodayView: View {
 
     private func start() {
         WorkoutLoggingHelpers.startSession(in: context)
+    }
+
+    /// Starts a new active session from a template and records the template link
+    /// so the active screen can surface its planned exercises (F4). The view
+    /// switches to `ActiveWorkoutView` automatically once the session exists.
+    private func startFromTemplate(_ template: WorkoutTemplate) {
+        TemplateSupport.startSession(from: template, in: context)
     }
 }
 

@@ -11,6 +11,10 @@ import SwiftData
 struct SetEntryView: View {
     let session: WorkoutSession
     let exercise: Exercise
+    /// Optional target taken from a template item, used to pre-fill this set's
+    /// weight mode / load / reps when starting a workout from a template (F4).
+    /// When nil, the view falls back to its usual history-based defaults.
+    var prefill: SetPrefill?
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -233,6 +237,15 @@ struct SetEntryView: View {
         guard !didLoadDefaults else { return }
         didLoadDefaults = true
 
+        // A template target (when starting from a template) takes priority over
+        // history-derived defaults, but only for the very first set of this
+        // exercise in the session — later sets chain from what was just logged.
+        let isFirstSetOfExercise = WorkoutLoggingHelpers.lastSetInSession(session, exercise: exercise) == nil
+        if let prefill, isFirstSetOfExercise {
+            applyPrefill(prefill)
+            return
+        }
+
         // Prefer the last set within this session, else the most recent ever.
         let basis = WorkoutLoggingHelpers.lastSetInSession(session, exercise: exercise)
             ?? WorkoutLoggingHelpers.lastSet(for: exercise)
@@ -251,6 +264,26 @@ struct SetEntryView: View {
         bodyWeightKg = suggestion.bodyWeightKg ?? defaultBodyWeight
         reps = suggestion.reps
         // Effort and qualitative fields are intentionally left blank for each set.
+    }
+
+    /// Applies a template-derived prefill, filling the load field that matches
+    /// the target's weight mode and the rep target. History-based defaults are
+    /// intentionally skipped so the planned numbers show up exactly.
+    private func applyPrefill(_ prefill: SetPrefill) {
+        weightMode = prefill.weightMode == .unknown ? exercise.defaultWeightMode : prefill.weightMode
+        switch weightMode {
+        case .external, .unknown:
+            weightKg = prefill.weightKg
+        case .addedBodyweight:
+            addedWeightKg = prefill.weightKg
+            bodyWeightKg = defaultBodyWeight
+        case .assistedBodyweight:
+            assistanceKg = prefill.weightKg
+            bodyWeightKg = defaultBodyWeight
+        case .bodyweight:
+            bodyWeightKg = defaultBodyWeight
+        }
+        reps = prefill.reps
     }
 
     private var defaultBodyWeight: Double? {
@@ -318,6 +351,28 @@ struct SetEntryView: View {
 
         try? context.save()
         dismiss()
+    }
+}
+
+/// A lightweight target used to pre-fill `SetEntryView` when logging a planned
+/// exercise from a template (F4). `weightKg` holds the load in the field that
+/// matches `weightMode` (external load, added weight, or assistance).
+struct SetPrefill {
+    var weightMode: WeightMode
+    var weightKg: Double?
+    var reps: Int?
+
+    init(weightMode: WeightMode = .external, weightKg: Double? = nil, reps: Int? = nil) {
+        self.weightMode = weightMode
+        self.weightKg = weightKg
+        self.reps = reps
+    }
+
+    /// Builds a prefill from a template item's targets.
+    init(item: TemplateItem) {
+        self.weightMode = item.weightMode
+        self.weightKg = item.targetWeightKg
+        self.reps = item.targetReps
     }
 }
 
