@@ -14,14 +14,11 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F3 — Goal trackers screen (Bench 100 kg, Pull-ups)** (`feat-f3-goal-trackers`)
-  A dedicated screen surfacing goal exercises: best set, recent working weights,
-  est-1RM trend, distance to target (configurable target kg / reps). No coaching.
-
-## Now (next up)
-- [ ] **F4 — Workout templates / routines**
+- [ ] **F4 — Workout templates / routines** (`feat-f4-templates`)
   Save a workout as a reusable template (ordered exercises + target sets); start
   a new workout from a template, pre-creating the exercise list.
+
+## Now (next up)
 - [ ] **F5 — Rest-timer notifications + haptics polish**
   Local notification when the rest timer ends (with permission), haptic on set
   save and PR.
@@ -62,6 +59,7 @@ item ships as its own pull request, based on the previous (merged) work on
 <!-- merged items move here with PR links -->
 - [x] **F1 — Rest timer** — in-app between-sets countdown with ±15s/skip, wired into the active workout. PR #2 (merged).
 - [x] **F2 — Personal records** — deterministic PR detection (load/reps/est-1RM), badges in history & exercise detail, on-save haptic + banner. PR #3 (merged).
+- [x] **F3 — Goal trackers** — per-goal cards (best/target/distance, trend), UserDefaults targets, reachable from Exercises + Today. PR #4 (merged).
 
 ## New ideas (groomed in)
 - [ ] **F19 — Rest-timer Settings control + per-exercise default rest**
