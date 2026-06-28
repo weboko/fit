@@ -83,7 +83,7 @@ enum CSVExporter {
                 w.foodTiming?.rawValue ?? "",
                 w.caffeine?.rawValue ?? "",
                 str(w.bodyWeightManualKg),
-                "", // body_weight_kg_imported — not modelled (see body_weight.csv)
+                importedBodyWeight(forWorkoutStart: w.startTime, in: data),
                 w.linkedHealthWorkout?.appleHealthUUID ?? "",
                 w.notes,
                 ExportFormatting.iso(w.createdAt),
@@ -93,6 +93,25 @@ enum CSVExporter {
             ]
         }
         return document(header: header, rows: rows)
+    }
+
+    /// The kg weight of the Health-imported body-weight entry recorded on the same
+    /// calendar day as `workoutStart`, choosing the one closest in time to it.
+    /// Empty string when none exists (or when body-weight entries are excluded
+    /// from the export, in which case `data.bodyWeightEntries` is empty).
+    /// Formatted with the same helper as `body_weight_kg_manual`.
+    private static func importedBodyWeight(forWorkoutStart workoutStart: Date, in data: ExportDataSet) -> String {
+        let calendar = Calendar.current
+        let workoutDay = calendar.startOfDay(for: workoutStart)
+        let nearest = data.bodyWeightEntries
+            .filter { $0.source == .healthImport
+                && calendar.startOfDay(for: $0.timestamp) == workoutDay }
+            .min { lhs, rhs in
+                abs(lhs.timestamp.timeIntervalSince(workoutStart))
+                    < abs(rhs.timestamp.timeIntervalSince(workoutStart))
+            }
+        guard let nearest else { return "" }
+        return str(nearest.weightKg)
     }
 
     /// sets.csv
