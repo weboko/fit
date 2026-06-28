@@ -14,21 +14,27 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F15 — Onboarding flow** (`feat-f15-onboarding`)
-  First-run explainer (privacy, Health, units) + optional starter exercises.
+_(idle — next item picked by the autonomous loop / cron heartbeat)_
 
-## Now (next up)
-
-## Later
-- [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
-  Externalize strings; provide initial translations for the user's languages.
-- [ ] **F13 — Heart-rate zones in export + summary**
-  Compute per-zone seconds from imported HR samples; fill the zone columns.
-- [ ] **F14 — Home-screen widget (last workout / streak)**
-  WidgetKit extension showing streak and last session summary.
-- [ ] **F16 — Unit tests (StatsKit, export round-trip, weight conversion)**
-  XCTest target covering the deterministic logic and export column contract.
+## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
 - [ ] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)**
+  Audit large screens; add VoiceOver labels/traits, dynamic-type-friendly layouts.
+- [ ] **F22 — CSV import**
+  Import the multi-CSV export back into the store (complements F11's JSON import).
+- [ ] **F13 — Heart-rate zones in export + summary**
+  Store per-zone seconds on HealthWorkout (optional fields) computed at Health
+  import; fill the heart_rate_summary.csv zone columns.
+
+## Later — NEEDS A REAL XCODE BUILD before merge (new target / large surface)
+> These touch the Xcode project structure or a huge surface, which can't be
+> compiler-verified in the headless loop. Do them on a Mac with a build, or have
+> the loop open the PR as a DRAFT for a human build check rather than auto-merge.
+- [ ] **F16 — Unit tests (StatsKit, export/import round-trip, weight conversion)**
+  Needs a new XCTest target (pbxproj change) — build required.
+- [ ] **F14 — Home-screen widget (last workout / streak)**
+  Needs a new WidgetKit app-extension target (pbxproj change) — build required.
+- [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
+  Large cross-file string externalization + String Catalog — build recommended.
 
 ## Done
 <!-- merged items move here with PR links -->
@@ -46,6 +52,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F21 — Superset in export** — `superset_group` added to sets.csv + JSON (round-trips with F11 import). PR #13 (merged).
 - [x] **F18 — Training calendar heatmap** — GitHub-style training-days heatmap in Insights. PR #14 (merged).
 - [x] **F20 — Per-exercise rest** — optional per-exercise rest duration (UserDefaults by id), used by the active timer. PR #15 (merged).
+- [x] **F15 — Onboarding flow** — first-run paged explainer (privacy/units/Health/starter exercises), shown once. PR #16 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
