@@ -104,7 +104,7 @@ enum CSVExporter {
             "assistance_kg", "added_weight_kg", "reps", "effort_0_5", "reps_left",
             "form_quality", "limiter", "pain_severity", "pain_location",
             "is_warmup", "is_failed", "source", "notes", "created_at", "updated_at",
-            "effective_load_kg", "volume_kg", "estimated_1rm_kg"
+            "effective_load_kg", "volume_kg", "estimated_1rm_kg", "superset_group"
         ]
         let rows = data.sets.map { s -> [String] in
             [
@@ -134,7 +134,8 @@ enum CSVExporter {
                 ExportFormatting.iso(s.updatedAt),
                 str(s.effectiveLoadKg),
                 str(s.volumeKg),
-                str(s.estimatedOneRepMaxKg)
+                str(s.estimatedOneRepMaxKg),
+                str(s.supersetGroup)
             ]
         }
         return document(header: header, rows: rows)
