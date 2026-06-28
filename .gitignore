@@ -21,3 +21,6 @@ Carthage/Build/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Local harness state (schedulers etc.) — never commit
+.claude/
