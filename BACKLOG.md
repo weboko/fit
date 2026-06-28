@@ -14,9 +14,9 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F11 — JSON import (restore from a prior export)** (`feat-f11-import`)
-  Round-trip the JSON export back into the store (upsert by id), enabling
-  backup/restore and migration. Scope: JSON only; CSV import split to F22.
+- [ ] **F21 — Superset group in export (CSV/JSON)** (`feat-f21-superset-export`)
+  Add `superset_group` to sets.csv and the JSON set objects (Int), completing the
+  export↔import round-trip for the F10 field (the F11 importer already reads it).
 
 ## Now (next up)
 
@@ -46,14 +46,12 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F8 — Plate calculator** — greedy per-side plate math + view, reachable from external-mode set entry. PR #9 (merged).
 - [x] **F9 — Repeat last workout** — quick-start from the most recent workout via an auto-managed template, reusing the planned flow. PR #10 (merged).
 - [x] **F10 — Supersets** — optional supersetGroup field, set-entry tagging, badges in active workout & history. PR #11 (merged).
+- [x] **F11 — JSON import** — upsert-by-id restore of the JSON export (no deletes), fileImporter UI in Data management. PR #12 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
 - [ ] **F20 — Per-exercise default rest override**
   Optional per-exercise rest duration; the active workout reads it when present,
   falling back to the global default. (Follow-up split out of F19.)
-- [ ] **F21 — Superset group in export (CSV/JSON)**
-  Add the `superset_group` column to sets.csv and the JSON set objects once F10
-  lands the field. (Follow-up split out of F10.)
 - [ ] **F22 — CSV import**
   Import the multi-CSV export back into the store (complements F11's JSON import).
