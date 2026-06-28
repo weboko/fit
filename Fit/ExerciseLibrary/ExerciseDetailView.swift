@@ -235,7 +235,11 @@ struct ExerciseDetailView: View {
             }
             .pickerStyle(.segmented)
 
-            MetricLineChart(points: chartPoints, unitSuffix: " \(Format.weightUnit.symbol)")
+            MetricLineChart(
+                points: chartPoints,
+                unitSuffix: " \(Format.weightUnit.symbol)",
+                accessibilitySummary: chartAccessibilitySummary
+            )
 
             if chartMetric == .oneRepMax {
                 Text("Estimated 1RM per session (estimate).")
@@ -329,6 +333,33 @@ struct ExerciseDetailView: View {
         case .bestLoad: return StatsKit.bestLoadPerSession(sets)
         case .oneRepMax: return StatsKit.estimatedOneRepMaxPerSession(sets)
         }
+    }
+
+    /// A data-rich VoiceOver summary of the progress chart: which metric, how
+    /// many sessions, the value range, the latest value and the trend direction
+    /// (spec F23). Values are formatted like the chart's own labels — the raw kg
+    /// figure with the user's unit symbol — and the empty/single cases are
+    /// handled so the screen reader never hears a partial sentence.
+    private var chartAccessibilitySummary: String {
+        let points = chartPoints
+        let metric = chartMetric.label
+        guard let first = points.first, let last = points.last else {
+            return "\(metric): no data yet."
+        }
+        let unit = Format.weightUnit.symbol
+        func valueText(_ value: Double) -> String { "\(Format.decimal(value)) \(unit)" }
+        let latest = valueText(last.value)
+        if points.count == 1 {
+            return "\(metric): one session, \(latest)."
+        }
+        let low = points.map(\.value).min() ?? first.value
+        let high = points.map(\.value).max() ?? last.value
+        let trend: String
+        if last.value > first.value { trend = "trending up" }
+        else if last.value < first.value { trend = "trending down" }
+        else { trend = "flat" }
+        return "\(metric) over \(points.count) sessions: "
+            + "\(valueText(low)) to \(valueText(high)), latest \(latest), \(trend)."
     }
 
     private func muscleList(_ muscles: [MuscleGroup]) -> String {
