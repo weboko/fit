@@ -364,8 +364,37 @@ private struct GoalCard: View {
                   systemImage: "chart.xyaxis.line")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
-            MetricLineChart(points: trendPoints, unitSuffix: trendSuffix)
+            MetricLineChart(
+                points: trendPoints,
+                unitSuffix: trendSuffix,
+                accessibilitySummary: trendAccessibilitySummary
+            )
         }
+    }
+
+    /// A data-rich VoiceOver summary of the goal trend chart: which metric, how
+    /// many sessions, the value range, the latest value and direction (spec F23).
+    /// Values use the same `trendSuffix` the chart labels with (unit symbol for
+    /// 1RM, none for reps); empty/single cases handled.
+    private var trendAccessibilitySummary: String {
+        let points = trendPoints
+        let metric = progress.metric == .kg ? "Est. 1RM" : "Best reps"
+        guard let first = points.first, let last = points.last else {
+            return "\(metric): no data yet."
+        }
+        func valueText(_ value: Double) -> String { "\(Format.decimal(value))\(trendSuffix)" }
+        let latest = valueText(last.value)
+        if points.count == 1 {
+            return "\(metric): one session, \(latest)."
+        }
+        let low = points.map(\.value).min() ?? first.value
+        let high = points.map(\.value).max() ?? last.value
+        let trend: String
+        if last.value > first.value { trend = "trending up" }
+        else if last.value < first.value { trend = "trending down" }
+        else { trend = "flat" }
+        return "\(metric) over \(points.count) sessions: "
+            + "\(valueText(low)) to \(valueText(high)), latest \(latest), \(trend)."
     }
 
     private var trendPoints: [StatsKit.SessionPoint] {

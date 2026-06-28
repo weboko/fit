@@ -59,7 +59,11 @@ struct BodyWeightView: View {
     @ViewBuilder
     private var chartSection: some View {
         Section {
-            MetricLineChart(points: chartPoints, unitSuffix: " \(Format.weightUnit.symbol)")
+            MetricLineChart(
+                points: chartPoints,
+                unitSuffix: " \(Format.weightUnit.symbol)",
+                accessibilitySummary: chartAccessibilitySummary
+            )
         } header: {
             Text("Trend")
         }
@@ -132,6 +136,30 @@ struct BodyWeightView: View {
         entries
             .sorted { $0.timestamp < $1.timestamp }
             .map { StatsKit.SessionPoint(date: $0.timestamp, value: $0.weightKg) }
+    }
+
+    /// A data-rich VoiceOver summary of the body-weight trend chart: number of
+    /// entries, value range, latest weight and direction (spec F23). Formatted
+    /// like the chart labels (raw kg figure + unit symbol); empty/single handled.
+    private var chartAccessibilitySummary: String {
+        let points = chartPoints
+        guard let first = points.first, let last = points.last else {
+            return "Body weight: no data yet."
+        }
+        let unit = Format.weightUnit.symbol
+        func valueText(_ value: Double) -> String { "\(Format.decimal(value)) \(unit)" }
+        let latest = valueText(last.value)
+        if points.count == 1 {
+            return "Body weight: one entry, \(latest)."
+        }
+        let low = points.map(\.value).min() ?? first.value
+        let high = points.map(\.value).max() ?? last.value
+        let trend: String
+        if last.value > first.value { trend = "trending up" }
+        else if last.value < first.value { trend = "trending down" }
+        else { trend = "flat" }
+        return "Body weight over \(points.count) entries: "
+            + "\(valueText(low)) to \(valueText(high)), latest \(latest), \(trend)."
     }
 
     // MARK: - Actions

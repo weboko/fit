@@ -26,12 +26,13 @@ item ships as its own pull request, based on the previous (merged) work on
 ## In progress
 - _(idle)_ — F27 (remove dead `suggestedWorkouts`) is next up.
 
+> F23 just landed (this PR): data-rich VoiceOver summaries for `MetricLineChart`
+> across exercise-detail, body-weight and goal-tracker charts.
+
 ## Now (next up) — ROI-ranked, compiler-safe, additive
 - [ ] **F27 — Remove dead `HealthImportService.suggestedWorkouts(for:in:)`**
   Audit noise item: unused; `HealthLinkSection` re-implements the overlap filter
   inline. Delete (DRY). Trivial; can ride along with another PR.
-- [ ] **F23 — Exercise-detail accessibility chart summaries**
-  Extend F17's chart-summary pattern to the exercise-detail charts (follow-up).
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -48,6 +49,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F23 — Data-rich accessibility summaries for `MetricLineChart`** — added an optional `accessibilitySummary: String?` parameter (default `nil`) to `MetricLineChart.init`; when supplied it becomes the chart's `.accessibilityLabel` (still one combined element via `.accessibilityElement(children: .ignore)`), otherwise the generic "Trend chart" label + the in-component fallback summary are kept, so every existing caller stays source-compatible. All three call sites now pass a metric-aware one-liner (count of sessions/entries, value range, latest value, trend up/down/flat, formatted like the chart's own labels with the unit symbol): exercise-detail (Best load / Est. 1RM, required target), body-weight trend, and goal-tracker trend (Est. 1RM / Best reps). Empty/single-point cases handled ("no data yet" / single value). No model/schema/export changes, no new deps. PR #__ (pending).
 - [x] **F13 — Heart-rate zones in import + export** — added five optional `Int?` `zoneNSeconds` fields to `HealthWorkout` (CloudKit-safe, lightweight migration), computed at Health import by time-weighting HR samples (interval to next sample clamped to [0,60]s, credited to the current sample's zone by `bpm / maxHR`: Z1 .50–.60 … Z5 ≥.90, below .50 = no zone). New `maxHeartRateBpm` setting (default 190, 0/unset = 190) with a Settings → Apple Health stepper (120–220). `CSVExporter.heartRateSummary` now fills `zone_1..5_seconds` (spec §12.9) via `str(_:Int?)`. JSON export/import intentionally untouched (CSV-only feature). PR #22 (pending).
 - [x] **F26 — Import integrity (stop blank-overwrite + honest errors)** — fixed the "upsert, never deletes" data-loss bug: the JSON path (`DataImportService.swift`) no longer blanks a populated `notes`/`title` via `?? ""` and the CSV path (`CSVImportService.swift`) now uses the empty-aware `string(_:_:)` helper so a present-but-blank cell preserves the existing value (insert still gets the model's `""` default). `ImportError.unreadable` wording is now format-agnostic (shared by JSON + CSV). Added a per-file malformed-row warning (field count != header count) via `CSVParser.parse`, without changing `parseKeyed`'s contract. PR #21 (merged).
 - [x] **F25 — Populate `body_weight_kg_imported` in workouts.csv** — `CSVExporter.workouts` now fills the spec §12.4 column from the nearest same-day Health-imported (`DataSource.healthImport`) `BodyWeightEntry`, formatted like `body_weight_kg_manual`; empty when none (or when body-weight is excluded from the export). Pure exporter change, no model/migration. PR #20 (merged).

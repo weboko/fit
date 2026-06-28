@@ -9,6 +9,12 @@ struct MetricLineChart: View {
     var unitSuffix: String = ""
     var tint: Color = .accentColor
 
+    /// An optional, caller-supplied spoken summary for VoiceOver. When provided
+    /// it becomes the chart's accessibility label so screen-reader users hear a
+    /// data-rich recap (point count, range, latest value, direction). When nil
+    /// the chart falls back to the generic label below (spec F17/F23).
+    var accessibilitySummary: String? = nil
+
     var body: some View {
         if points.count < 2 {
             Text("Not enough data yet to chart.")
@@ -48,14 +54,15 @@ struct MetricLineChart: View {
             }
             .frame(height: 180)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Trend chart")
-            .accessibilityValue(accessibilitySummary)
+            .accessibilityLabel(accessibilitySummary ?? "Trend chart")
+            .accessibilityValue(accessibilitySummary == nil ? fallbackSummary : "")
         }
     }
 
     /// A concise spoken summary of the plotted trend (first/last values and
     /// direction) so VoiceOver users get the gist without exploring every point.
-    private var accessibilitySummary: String {
+    /// Used only when the caller doesn't supply its own `accessibilitySummary`.
+    private var fallbackSummary: String {
         guard let first = points.first, let last = points.last else { return "No data" }
         let direction: String
         if last.value > first.value { direction = "up" }
