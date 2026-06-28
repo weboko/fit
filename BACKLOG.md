@@ -14,13 +14,11 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F8 — Plate calculator** (`feat-f8-plate-calculator`)
-  Given a target barbell load and a bar weight + available plates, show the plate
-  breakdown per side. Pure utility, reachable from set entry.
+- [ ] **F9 — "Repeat last workout" / quick start** (`feat-f9-repeat-workout`)
+  Start a new session pre-populated from the most recent workout (reuses the F4
+  template "planned" flow via a single auto-managed quick-start template).
 
 ## Now (next up)
-- [ ] **F9 — "Repeat last workout" / quick start**
-  Start a new session pre-populated from the most recent matching workout.
 - [ ] **F10 — Superset / circuit grouping**
   Allow grouping exercises within a session as a superset for logging order.
 
@@ -50,6 +48,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F5 — Rest alerts + haptics** — local rest-end notification (opt-in), save haptic, Settings "Rest" section (alerts + default duration; closes F19). PR #6 (merged).
 - [x] **F6 — Body-weight tracking** — trend chart + manual entry editor, Apple Health badge, feeds bodyweight set default. Settings → Tracking. PR #7 (merged).
 - [x] **F7 — Insights analytics** — frequency + per-muscle volume/sets charts over a time range, third History mode. PR #8 (merged).
+- [x] **F8 — Plate calculator** — greedy per-side plate math + view, reachable from external-mode set entry. PR #9 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
