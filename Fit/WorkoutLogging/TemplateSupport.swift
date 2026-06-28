@@ -91,6 +91,17 @@ enum TemplateSupport {
     /// items into a `ModelContext` and saving.
     static func makeTemplate(from session: WorkoutSession) -> WorkoutTemplate {
         let template = WorkoutTemplate(name: defaultTemplateName(for: session))
+        let items = makeItems(from: session)
+        for item in items { item.template = template }
+        template.items = items
+        return template
+    }
+
+    /// Builds (but does not insert or parent) one `TemplateItem` per distinct
+    /// exercise in `session`, in logging order, deriving targets from each
+    /// exercise's working sets. Shared by `makeTemplate(from:)` and the F9
+    /// quick-start flow so target derivation stays in one place.
+    static func makeItems(from session: WorkoutSession) -> [TemplateItem] {
         var items: [TemplateItem] = []
 
         for (offset, exercise) in session.exercisesInOrder.enumerated() {
@@ -119,12 +130,10 @@ enum TemplateSupport {
                 exercise: exercise,
                 exerciseNameAtTime: exercise.canonicalName
             )
-            item.template = template
             items.append(item)
         }
 
-        template.items = items
-        return template
+        return items
     }
 
     /// The target weight to store for a representative set, in the field that
@@ -145,5 +154,67 @@ enum TemplateSupport {
         let title = session.title.trimmingCharacters(in: .whitespacesAndNewlines)
         if !title.isEmpty { return title }
         return session.startTime.formatted(.dateTime.weekday().month().day())
+    }
+
+    // MARK: - Repeat last workout (F9)
+
+    /// Display name for the single auto-managed quick-start template.
+    static let quickStartTemplateName = "↻ Quick start"
+
+    /// The most recent finished session (endTime != nil), or nil if there are
+    /// none. Sorted by start time descending; a small fetch limit keeps it cheap.
+    static func mostRecentFinishedSession(in context: ModelContext) -> WorkoutSession? {
+        var descriptor = FetchDescriptor<WorkoutSession>(
+            predicate: #Predicate { $0.endTime != nil },
+            sortBy: [SortDescriptor(\.startTime, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    /// Starts a fresh session pre-populated from the most recent finished
+    /// workout, reusing the F4 planned-template flow. Returns the new active
+    /// session, or nil if there is no finished workout to repeat.
+    ///
+    /// The exercises/targets are mirrored onto a SINGLE reusable "quick start"
+    /// template (remembered in `AppSettingsKeys.quickStartTemplateId`) which is
+    /// refreshed in place each time, so repeated taps never clutter the template
+    /// list. Once the template is updated we hand off to `startSession(from:in:)`
+    /// exactly like any other template start, so the active screen's planned card
+    /// and active-template link work with zero `ActiveWorkoutView` changes.
+    @discardableResult
+    static func repeatLastWorkout(in context: ModelContext) -> WorkoutSession? {
+        guard let last = mostRecentFinishedSession(in: context) else { return nil }
+
+        let template = quickStartTemplate(in: context)
+        template.name = quickStartTemplateName
+
+        // Replace any previous items so the template mirrors the latest workout.
+        for old in (template.items ?? []) {
+            context.delete(old)
+        }
+        let items = makeItems(from: last)
+        for item in items { item.template = template }
+        template.items = items
+        template.touch()
+
+        try? context.save()
+        return startSession(from: template, in: context)
+    }
+
+    /// Looks up the stored quick-start template, or creates and remembers a new
+    /// one if there is no stored id or it no longer exists in the store.
+    private static func quickStartTemplate(in context: ModelContext) -> WorkoutTemplate {
+        if let stored = UserDefaults.standard.string(forKey: AppSettingsKeys.quickStartTemplateId),
+           let id = UUID(uuidString: stored) {
+            let descriptor = FetchDescriptor<WorkoutTemplate>(predicate: #Predicate { $0.id == id })
+            if let existing = (try? context.fetch(descriptor))?.first {
+                return existing
+            }
+        }
+        let template = WorkoutTemplate(name: quickStartTemplateName)
+        context.insert(template)
+        UserDefaults.standard.set(template.id.uuidString, forKey: AppSettingsKeys.quickStartTemplateId)
+        return template
     }
 }

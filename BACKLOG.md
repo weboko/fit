@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F9 — "Repeat last workout" / quick start** (`feat-f9-repeat-workout`)
+- [x] **F9 — "Repeat last workout" / quick start** (`feat-f9-repeat-workout`)
   Start a new session pre-populated from the most recent workout (reuses the F4
   template "planned" flow via a single auto-managed quick-start template).
 

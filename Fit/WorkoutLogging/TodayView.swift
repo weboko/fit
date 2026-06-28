@@ -66,6 +66,7 @@ struct TodayView: View {
                 templatesRow
 
                 if let last = lastFinished {
+                    repeatLastButton(last)
                     lastWorkoutCard(last)
                 }
 
@@ -139,6 +140,23 @@ struct TodayView: View {
         case 17..<22: return "Good evening"
         default: return "Late session"
         }
+    }
+
+    /// F9: one-tap repeat of the most recent finished workout. Pre-populates a
+    /// fresh session with the last workout's exercises and targets, then drops
+    /// straight into the active screen via the shared planned-template flow.
+    private func repeatLastButton(_ session: WorkoutSession) -> some View {
+        Button {
+            repeatLast()
+        } label: {
+            Label("Repeat last workout", systemImage: "arrow.clockwise")
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: Theme.Size.controlHeight)
+                .background(Color.accentColor.opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Starts a new workout with the same exercises as \(session.displayTitle())")
     }
 
     private func lastWorkoutCard(_ session: WorkoutSession) -> some View {
@@ -217,6 +235,13 @@ struct TodayView: View {
     /// switches to `ActiveWorkoutView` automatically once the session exists.
     private func startFromTemplate(_ template: WorkoutTemplate) {
         TemplateSupport.startSession(from: template, in: context)
+    }
+
+    /// Starts a fresh session pre-populated from the most recent finished workout
+    /// (F9). Creating the session updates the `sessions` query, so the view
+    /// switches to `ActiveWorkoutView` automatically — same transition as Start.
+    private func repeatLast() {
+        TemplateSupport.repeatLastWorkout(in: context)
     }
 }
 
