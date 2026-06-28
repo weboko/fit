@@ -64,6 +64,16 @@ final class CSVImportService {
 
         var summary = ImportSummary()
 
+        // Surface (but do not skip) rows whose field count differs from the
+        // header's: `parseKeyed` pads/truncates such rows, so the upsert still
+        // runs, but a mismatch hints at a malformed file worth flagging.
+        for name in recognised where byName[name] != nil {
+            let malformed = malformedRowCount(byName[name]!)
+            if malformed > 0 {
+                summary.warnings.append("\(name): \(malformed) row(s) had a column count that did not match the header.")
+            }
+        }
+
         // Caches keyed by id, used to resolve relationships and avoid re-fetching.
         var exercisesById: [UUID: Exercise] = [:]
         var workoutsById: [UUID: WorkoutSession] = [:]
@@ -112,6 +122,18 @@ final class CSVImportService {
 
     private func rows(_ text: String) -> [[String: String]] {
         CSVParser.parseKeyed(text)
+    }
+
+    /// Count data rows whose raw field count differs from the header's. Uses the
+    /// raw `parse` output (not `parseKeyed`, which pads/truncates) so a genuine
+    /// column-count mismatch can be reported as a warning without changing how
+    /// the rows themselves are imported.
+    private func malformedRowCount(_ text: String) -> Int {
+        let raw = CSVParser.parse(text)
+        guard let header = raw.first else { return 0 }
+        return raw.dropFirst().reduce(into: 0) { count, row in
+            if row.count != header.count { count += 1 }
+        }
     }
 
     /// The raw string for a column, or nil when the column is missing or empty.
@@ -188,7 +210,7 @@ final class CSVImportService {
             }
             if let primary = string(row, "primary_muscles") { exercise.primaryMusclesRaw = splitList(primary) }
             if let secondary = string(row, "secondary_muscles") { exercise.secondaryMusclesRaw = splitList(secondary) }
-            exercise.notes = row["notes"] ?? exercise.notes
+            if let notes = string(row, "notes") { exercise.notes = notes }
             if let archived = bool(row, "archived") { exercise.archived = archived }
             if let goal = bool(row, "is_goal_exercise") { exercise.isGoalExercise = goal }
             if let favorite = bool(row, "is_favorite") { exercise.isFavorite = favorite }
@@ -298,7 +320,7 @@ final class CSVImportService {
             if let weight = double(row, "weight_kg") { entry.weightKg = weight }
             if let source = string(row, "source").flatMap(DataSource.init(rawValue:)) { entry.source = source }
             entry.appleHealthSampleId = string(row, "apple_health_sample_id")
-            entry.notes = row["notes"] ?? entry.notes
+            if let notes = string(row, "notes") { entry.notes = notes }
         }
     }
 
@@ -327,7 +349,7 @@ final class CSVImportService {
             if let source = string(row, "sleep_source").flatMap(DataSource.init(rawValue:)) { entry.source = source }
             entry.subjectiveSleepQuality = string(row, "subjective_sleep_quality").flatMap(SleepQuality.init(rawValue:))
             entry.appleHealthSampleId = string(row, "apple_health_sample_id")
-            entry.notes = row["notes"] ?? entry.notes
+            if let notes = string(row, "notes") { entry.notes = notes }
         }
     }
 
@@ -350,7 +372,7 @@ final class CSVImportService {
                 summary.insertedWorkouts += 1
             }
 
-            workout.title = row["title"] ?? workout.title
+            if let title = string(row, "title") { workout.title = title }
             if let start = date(row, "start_time") { workout.startTime = start }
             workout.endTime = date(row, "end_time")
             if let tz = string(row, "timezone") { workout.timezoneIdentifier = tz }
@@ -366,7 +388,7 @@ final class CSVImportService {
             workout.foodTiming = string(row, "food_timing").flatMap(FoodTiming.init(rawValue:))
             workout.caffeine = string(row, "caffeine").flatMap(Caffeine.init(rawValue:))
             workout.bodyWeightManualKg = double(row, "body_weight_kg_manual")
-            workout.notes = row["notes"] ?? workout.notes
+            if let notes = string(row, "notes") { workout.notes = notes }
 
             // Link the Apple Health workout by its HK UUID (workouts.csv stores the
             // health workout's `appleHealthUUID` in `apple_health_workout_id`).
@@ -420,7 +442,7 @@ final class CSVImportService {
             if let failed = bool(row, "is_failed") { set.isFailed = failed }
             set.supersetGroup = int(row, "superset_group")
             if let source = string(row, "source").flatMap(RecordSource.init(rawValue:)) { set.source = source }
-            set.notes = row["notes"] ?? set.notes
+            if let notes = string(row, "notes") { set.notes = notes }
             if let created = date(row, "created_at") { set.createdAt = created }
             if let updated = date(row, "updated_at") { set.updatedAt = updated }
 

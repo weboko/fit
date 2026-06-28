@@ -20,7 +20,7 @@ enum ImportError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unreadable(let detail):
-            return "The file could not be read as a Fit JSON export: \(detail)"
+            return "The file could not be read as a Fit export: \(detail)"
         }
     }
 }
@@ -492,7 +492,7 @@ final class DataImportService {
             }
             if let primary = dto.primaryMuscles { exercise.primaryMusclesRaw = primary }
             if let secondary = dto.secondaryMuscles { exercise.secondaryMusclesRaw = secondary }
-            exercise.notes = dto.notes ?? ""
+            if let notes = dto.notes { exercise.notes = notes }
             if let archived = dto.archived { exercise.archived = archived }
             if let goal = dto.isGoalExercise { exercise.isGoalExercise = goal }
             if let favorite = dto.isFavorite { exercise.isFavorite = favorite }
@@ -594,7 +594,7 @@ final class DataImportService {
             if let weight = dto.weightKg { entry.weightKg = weight }
             if let source = dto.source.flatMap(DataSource.init(rawValue:)) { entry.source = source }
             entry.appleHealthSampleId = dto.appleHealthSampleId
-            entry.notes = dto.notes ?? ""
+            if let notes = dto.notes { entry.notes = notes }
         }
     }
 
@@ -623,7 +623,7 @@ final class DataImportService {
             if let source = dto.source.flatMap(DataSource.init(rawValue:)) { entry.source = source }
             entry.subjectiveSleepQuality = dto.subjectiveSleepQuality.flatMap(SleepQuality.init(rawValue:))
             entry.appleHealthSampleId = dto.appleHealthSampleId
-            entry.notes = dto.notes ?? ""
+            if let notes = dto.notes { entry.notes = notes }
         }
     }
 
@@ -646,7 +646,7 @@ final class DataImportService {
                 summary.insertedWorkouts += 1
             }
 
-            workout.title = dto.title ?? ""
+            if let title = dto.title { workout.title = title }
             if let start = ImportFormatting.date(dto.startTime) { workout.startTime = start }
             workout.endTime = ImportFormatting.date(dto.endTime)
             if let tz = dto.timezone { workout.timezoneIdentifier = tz }
@@ -663,7 +663,7 @@ final class DataImportService {
                 workout.foodTiming = meta.foodTiming.flatMap(FoodTiming.init(rawValue:))
                 workout.caffeine = meta.caffeine.flatMap(Caffeine.init(rawValue:))
                 workout.bodyWeightManualKg = meta.bodyWeightManualKg
-                workout.notes = meta.notes ?? ""
+                if let notes = meta.notes { workout.notes = notes }
             }
 
             // Link the embedded health workout by id (already upserted earlier).
@@ -720,7 +720,7 @@ final class DataImportService {
                 if let failed = dto.isFailed { set.isFailed = failed }
                 set.supersetGroup = dto.supersetGroup
                 if let source = dto.source.flatMap(RecordSource.init(rawValue:)) { set.source = source }
-                set.notes = dto.notes ?? ""
+                if let notes = dto.notes { set.notes = notes }
                 if let created = ImportFormatting.date(dto.createdAt) { set.createdAt = created }
                 if let updated = ImportFormatting.date(dto.updatedAt) { set.updatedAt = updated }
 
