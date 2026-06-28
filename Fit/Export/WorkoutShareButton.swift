@@ -64,21 +64,18 @@ struct WorkoutShareButton: View {
         errorMessage = nil
 
         let container = context.container
-        Task.detached(priority: .userInitiated) {
-            let bgContext = ModelContext(container)
-            let service = DataExportService()
+        Task { @MainActor in
             do {
-                let exportResult = try service.export(request, context: bgContext)
-                await MainActor.run {
-                    self.result = exportResult
-                    self.isExporting = false
-                    self.showShareSheet = true
-                }
+                let exportResult = try await Task.detached(priority: .userInitiated) {
+                    let bgContext = ModelContext(container)
+                    return try DataExportService().export(request, context: bgContext)
+                }.value
+                self.result = exportResult
+                self.isExporting = false
+                self.showShareSheet = true
             } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isExporting = false
-                }
+                self.errorMessage = error.localizedDescription
+                self.isExporting = false
             }
         }
     }

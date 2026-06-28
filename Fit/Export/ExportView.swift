@@ -2,16 +2,19 @@ import SwiftUI
 import SwiftData
 import UIKit
 
-// MARK: - Date-range presets
+// MARK: - Export scope (date-range presets + selection scopes)
 
-/// User-facing date-range presets for the export screen.
-private enum DateRangePreset: String, CaseIterable, Identifiable {
+/// User-facing scope for the export screen: the date-range presets plus the two
+/// selection scopes (specific workouts / specific exercises) from spec §12.15.
+private enum ExportScope: String, CaseIterable, Identifiable {
     case all
     case last7
     case last30
     case last90
     case thisYear
     case custom
+    case selectedWorkouts
+    case selectedExercises
 
     var id: String { rawValue }
 
@@ -23,14 +26,16 @@ private enum DateRangePreset: String, CaseIterable, Identifiable {
         case .last90: return "Last 90 days"
         case .thisYear: return "This year"
         case .custom: return "Custom range"
+        case .selectedWorkouts: return "Selected workouts"
+        case .selectedExercises: return "Selected exercises"
         }
     }
 
     /// Resolve to a concrete (start, end) pair. `custom` returns nil so the view
-    /// uses its own DatePicker bindings instead.
+    /// uses its own DatePicker bindings; selection scopes impose no date bound.
     func resolvedRange(now: Date = Date(), calendar: Calendar = .current) -> (start: Date?, end: Date?)? {
         switch self {
-        case .all:
+        case .all, .selectedWorkouts, .selectedExercises:
             return (nil, nil)
         case .last7:
             return (calendar.date(byAdding: .day, value: -7, to: now), now)
@@ -40,8 +45,7 @@ private enum DateRangePreset: String, CaseIterable, Identifiable {
             return (calendar.date(byAdding: .day, value: -90, to: now), now)
         case .thisYear:
             let comps = calendar.dateComponents([.year], from: now)
-            let startOfYear = calendar.date(from: comps)
-            return (startOfYear, now)
+            return (calendar.date(from: comps), now)
         case .custom:
             return nil
         }
@@ -50,16 +54,18 @@ private enum DateRangePreset: String, CaseIterable, Identifiable {
 
 // MARK: - Export tab
 
-/// The Export tab. Lets the user pick a date range, format and inclusions, then
+/// The Export tab. Lets the user pick a scope, format and inclusions, then
 /// generates the files via `DataExportService` (off the main thread) and presents
 /// the iOS share sheet. All export logic lives in the service, not here.
 struct ExportView: View {
     @Environment(\.modelContext) private var context
 
-    // Date range
-    @State private var preset: DateRangePreset = .all
+    // Scope
+    @State private var scope: ExportScope = .all
     @State private var customStart: Date = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var customEnd: Date = Date()
+    @State private var selectedWorkoutIDs: Set<UUID> = []
+    @State private var selectedExerciseIDs: Set<UUID> = []
 
     // Format
     @State private var format: ExportFormat = .zip
@@ -79,7 +85,7 @@ struct ExportView: View {
     var body: some View {
         NavigationStack {
             Form {
-                dateRangeSection
+                scopeSection
                 formatSection
                 inclusionsSection
                 generateSection
@@ -103,18 +109,33 @@ struct ExportView: View {
 
     // MARK: - Sections
 
-    private var dateRangeSection: some View {
-        Section("Date range") {
-            Picker("Range", selection: $preset) {
-                ForEach(DateRangePreset.allCases) { p in
-                    Text(p.displayName).tag(p)
+    private var scopeSection: some View {
+        Section("What to export") {
+            Picker("Scope", selection: $scope) {
+                ForEach(ExportScope.allCases) { s in
+                    Text(s.displayName).tag(s)
                 }
             }
             .pickerStyle(.menu)
 
-            if preset == .custom {
+            switch scope {
+            case .custom:
                 DatePicker("From", selection: $customStart, displayedComponents: [.date])
                 DatePicker("To", selection: $customEnd, in: customStart..., displayedComponents: [.date])
+            case .selectedWorkouts:
+                NavigationLink {
+                    WorkoutSelectionList(selection: $selectedWorkoutIDs)
+                } label: {
+                    LabeledContent("Workouts", value: "\(selectedWorkoutIDs.count) selected")
+                }
+            case .selectedExercises:
+                NavigationLink {
+                    ExerciseSelectionList(selection: $selectedExerciseIDs)
+                } label: {
+                    LabeledContent("Exercises", value: "\(selectedExerciseIDs.count) selected")
+                }
+            default:
+                EmptyView()
             }
         }
     }
@@ -165,7 +186,7 @@ struct ExportView: View {
                 }
                 .frame(minHeight: Theme.Size.controlHeight)
             }
-            .disabled(isExporting)
+            .disabled(isExporting || !canExport)
         } footer: {
             Text("Everything is generated on this device. Nothing is uploaded — sharing is entirely up to you.")
         }
@@ -191,12 +212,20 @@ struct ExportView: View {
 
     // MARK: - Actions
 
+    private var canExport: Bool {
+        switch scope {
+        case .selectedWorkouts: return !selectedWorkoutIDs.isEmpty
+        case .selectedExercises: return !selectedExerciseIDs.isEmpty
+        default: return true
+        }
+    }
+
     private var errorBinding: Binding<Bool> {
         Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
     }
 
     private func resolvedDateRange() -> (start: Date?, end: Date?) {
-        if let resolved = preset.resolvedRange() {
+        if let resolved = scope.resolvedRange() {
             return resolved
         }
         // Custom: normalise so the end covers the whole selected day.
@@ -215,33 +244,106 @@ struct ExportView: View {
             includeHealthData: includeHealth,
             includeJournal: includeJournal,
             includeBodyWeight: includeBodyWeight,
-            includeSleep: includeSleep
+            includeSleep: includeSleep,
+            selectedExerciseIDs: scope == .selectedExercises ? Array(selectedExerciseIDs) : nil,
+            selectedWorkoutIDs: scope == .selectedWorkouts ? Array(selectedWorkoutIDs) : nil
         )
 
         isExporting = true
         errorMessage = nil
 
-        // Build a background ModelContext from the same container so the fetch +
-        // file writing happen off the main actor. The produced URLs are plain
-        // file URLs, safe to hand back to the main actor for the share sheet.
+        // Run the fetch + file writing on a background ModelContext built from the
+        // same container; only Sendable values (the request and the resulting file
+        // URLs) cross the actor boundary.
         let container = context.container
-        Task.detached(priority: .userInitiated) {
-            let bgContext = ModelContext(container)
-            let service = DataExportService()
+        Task { @MainActor in
             do {
-                let exportResult = try service.export(request, context: bgContext)
-                await MainActor.run {
-                    self.result = exportResult
-                    self.isExporting = false
-                    self.showShareSheet = true
-                }
+                let exportResult = try await Task.detached(priority: .userInitiated) {
+                    let bgContext = ModelContext(container)
+                    return try DataExportService().export(request, context: bgContext)
+                }.value
+                self.result = exportResult
+                self.isExporting = false
+                self.showShareSheet = true
             } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isExporting = false
-                }
+                self.errorMessage = error.localizedDescription
+                self.isExporting = false
             }
         }
+    }
+}
+
+// MARK: - Selection lists
+
+/// Multi-select list of finished workouts for the "Selected workouts" scope.
+private struct WorkoutSelectionList: View {
+    @Binding var selection: Set<UUID>
+    @Query(sort: \WorkoutSession.startTime, order: .reverse) private var sessions: [WorkoutSession]
+
+    var body: some View {
+        List {
+            ForEach(sessions.filter { !$0.isActive }) { session in
+                Button {
+                    toggle(session.id)
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(session.displayTitle())
+                            Text(session.startTime.formatted(.dateTime.month().day().year()))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if selection.contains(session.id) {
+                            Image(systemName: "checkmark").foregroundStyle(.tint)
+                        }
+                    }
+                }
+                .foregroundStyle(.primary)
+            }
+        }
+        .navigationTitle("Choose workouts")
+        .navigationBarTitleDisplayMode(.inline)
+        .overlay {
+            if sessions.allSatisfy(\.isActive) {
+                EmptyStateView(title: "No workouts", message: "Finish a workout first.", systemImage: "calendar")
+            }
+        }
+    }
+
+    private func toggle(_ id: UUID) {
+        if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
+    }
+}
+
+/// Multi-select list of exercises for the "Selected exercises" scope.
+private struct ExerciseSelectionList: View {
+    @Binding var selection: Set<UUID>
+    @Query(sort: \Exercise.canonicalName) private var exercises: [Exercise]
+
+    var body: some View {
+        List {
+            ForEach(exercises) { exercise in
+                Button {
+                    toggle(exercise.id)
+                } label: {
+                    HStack {
+                        Text(exercise.canonicalName)
+                        Spacer()
+                        if selection.contains(exercise.id) {
+                            Image(systemName: "checkmark").foregroundStyle(.tint)
+                        }
+                    }
+                }
+                .foregroundStyle(.primary)
+            }
+        }
+        .navigationTitle("Choose exercises")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func toggle(_ id: UUID) {
+        if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
     }
 }
 

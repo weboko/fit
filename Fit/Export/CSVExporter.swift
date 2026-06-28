@@ -55,24 +55,24 @@ enum CSVExporter {
 
     // MARK: - Per-file builders
 
-    /// workouts.csv
+    /// workouts.csv — spec §12.4 column order; trailing `timezone`/`is_backfilled`
+    /// are additive (not in the spec list but useful and harmless).
     static func workouts(_ data: ExportDataSet) -> String {
         let header = [
-            "workout_id", "title", "start_time", "end_time", "timezone",
-            "duration_seconds", "goal", "location", "energy_before",
-            "soreness", "pain_today", "sleep_quality_subjective",
-            "stress_level", "food_timing", "caffeine", "body_weight_manual_kg",
-            "is_backfilled", "notes", "linked_health_workout_id",
-            "created_at", "updated_at"
+            "workout_id", "start_time", "end_time", "duration_seconds", "title",
+            "workout_goal", "location", "energy_before_0_5", "soreness",
+            "pain_today", "sleep_quality_subjective", "stress_0_5", "food_timing",
+            "caffeine", "body_weight_kg_manual", "body_weight_kg_imported",
+            "apple_health_workout_id", "notes", "created_at", "updated_at",
+            "timezone", "is_backfilled"
         ]
         let rows = data.workouts.map { w -> [String] in
             [
                 w.id.uuidString,
-                w.title,
                 ExportFormatting.iso(w.startTime),
                 ExportFormatting.iso(w.endTime),
-                w.timezoneIdentifier,
                 w.duration.map { trimmedNumber($0) } ?? "",
+                w.title,
                 w.goal?.rawValue ?? "",
                 w.location?.rawValue ?? "",
                 str(w.energyBefore),
@@ -83,11 +83,13 @@ enum CSVExporter {
                 w.foodTiming?.rawValue ?? "",
                 w.caffeine?.rawValue ?? "",
                 str(w.bodyWeightManualKg),
-                str(w.isBackfilled),
+                "", // body_weight_kg_imported — not modelled (see body_weight.csv)
+                w.linkedHealthWorkout?.appleHealthUUID ?? "",
                 w.notes,
-                w.linkedHealthWorkout?.id.uuidString ?? "",
                 ExportFormatting.iso(w.createdAt),
-                ExportFormatting.iso(w.updatedAt)
+                ExportFormatting.iso(w.updatedAt),
+                w.timezoneIdentifier,
+                str(w.isBackfilled)
             ]
         }
         return document(header: header, rows: rows)
@@ -95,14 +97,14 @@ enum CSVExporter {
 
     /// sets.csv
     static func sets(_ data: ExportDataSet) -> String {
+        // Spec §12.5 order first; derived metrics appended as additive columns.
         let header = [
             "set_id", "workout_id", "exercise_id", "exercise_name_at_time",
-            "set_index", "timestamp", "weight_mode",
-            "weight_kg", "body_weight_kg", "assistance_kg", "added_weight_kg",
-            "effective_load_kg", "reps", "volume_kg", "estimated_1rm_kg",
-            "effort", "reps_left", "form_quality", "limiter",
-            "pain_severity", "pain_location", "is_warmup", "is_failed",
-            "source", "notes", "created_at", "updated_at"
+            "set_index", "timestamp", "weight_mode", "weight_kg", "body_weight_kg",
+            "assistance_kg", "added_weight_kg", "reps", "effort_0_5", "reps_left",
+            "form_quality", "limiter", "pain_severity", "pain_location",
+            "is_warmup", "is_failed", "source", "notes", "created_at", "updated_at",
+            "effective_load_kg", "volume_kg", "estimated_1rm_kg"
         ]
         let rows = data.sets.map { s -> [String] in
             [
@@ -117,10 +119,7 @@ enum CSVExporter {
                 str(s.bodyWeightKg),
                 str(s.assistanceKg),
                 str(s.addedWeightKg),
-                str(s.effectiveLoadKg),
                 str(s.reps),
-                str(s.volumeKg),
-                str(s.estimatedOneRepMaxKg),
                 str(s.effort),
                 s.repsLeft?.rawValue ?? "",
                 s.formQuality?.rawValue ?? "",
@@ -132,7 +131,10 @@ enum CSVExporter {
                 s.source.rawValue,
                 s.notes,
                 ExportFormatting.iso(s.createdAt),
-                ExportFormatting.iso(s.updatedAt)
+                ExportFormatting.iso(s.updatedAt),
+                str(s.effectiveLoadKg),
+                str(s.volumeKg),
+                str(s.estimatedOneRepMaxKg)
             ]
         }
         return document(header: header, rows: rows)
@@ -140,29 +142,29 @@ enum CSVExporter {
 
     /// exercises.csv
     static func exercises(_ data: ExportDataSet) -> String {
+        // Spec §12.6 order; is_goal_exercise/is_favorite appended as additive.
         let header = [
-            "exercise_id", "canonical_name", "category", "equipment",
-            "movement_pattern", "default_weight_mode",
-            "primary_muscles", "secondary_muscles",
-            "notes", "archived", "is_goal_exercise", "is_favorite",
-            "created_at", "updated_at"
+            "exercise_id", "canonical_name", "category", "primary_muscles",
+            "secondary_muscles", "equipment", "movement_pattern",
+            "default_weight_mode", "archived", "notes", "created_at", "updated_at",
+            "is_goal_exercise", "is_favorite"
         ]
         let rows = data.exercises.map { e -> [String] in
             [
                 e.id.uuidString,
                 e.canonicalName,
                 e.category?.rawValue ?? "",
+                e.primaryMusclesRaw.joined(separator: ";"),
+                e.secondaryMusclesRaw.joined(separator: ";"),
                 e.equipment?.rawValue ?? "",
                 e.movementPattern?.rawValue ?? "",
                 e.defaultWeightMode.rawValue,
-                e.primaryMusclesRaw.joined(separator: ";"),
-                e.secondaryMusclesRaw.joined(separator: ";"),
-                e.notes,
                 str(e.archived),
-                str(e.isGoalExercise),
-                str(e.isFavorite),
+                e.notes,
                 ExportFormatting.iso(e.createdAt),
-                ExportFormatting.iso(e.updatedAt)
+                ExportFormatting.iso(e.updatedAt),
+                str(e.isGoalExercise),
+                str(e.isFavorite)
             ]
         }
         return document(header: header, rows: rows)
@@ -170,7 +172,7 @@ enum CSVExporter {
 
     /// exercise_aliases.csv
     static func exerciseAliases(_ data: ExportDataSet) -> String {
-        let header = ["alias_id", "exercise_id", "alias_name", "language", "created_at"]
+        let header = ["alias_id", "exercise_id", "alias_name", "language_optional", "created_at"]
         let rows = data.exerciseAliases.map { a -> [String] in
             [
                 a.id.uuidString,
@@ -185,12 +187,14 @@ enum CSVExporter {
 
     /// health_workouts.csv
     static func healthWorkouts(_ data: ExportDataSet) -> String {
+        // Spec §12.8 order incl. the avg/min/max HR columns; linked_workout_id additive.
         let header = [
             "health_workout_id", "apple_health_uuid", "workout_type",
             "start_time", "end_time", "duration_seconds",
             "active_energy_kcal", "total_energy_kcal",
-            "source_name", "source_device",
-            "linked_workout_id", "imported_at"
+            "avg_heart_rate_bpm", "min_heart_rate_bpm", "max_heart_rate_bpm",
+            "source_name", "source_device", "imported_at",
+            "linked_workout_id"
         ]
         let rows = data.healthWorkouts.map { h -> [String] in
             [
@@ -202,10 +206,13 @@ enum CSVExporter {
                 trimmedNumber(h.durationSeconds),
                 str(h.activeEnergyKcal),
                 str(h.totalEnergyKcal),
+                str(h.avgHeartRateBpm),
+                str(h.minHeartRateBpm),
+                str(h.maxHeartRateBpm),
                 h.sourceName ?? "",
                 h.sourceDevice ?? "",
-                h.linkedSession?.id.uuidString ?? "",
-                ExportFormatting.iso(h.importedAt)
+                ExportFormatting.iso(h.importedAt),
+                h.linkedSession?.id.uuidString ?? ""
             ]
         }
         return document(header: header, rows: rows)
@@ -214,13 +221,16 @@ enum CSVExporter {
     /// heart_rate_summary.csv — zone_*_seconds intentionally left blank (optional
     /// per spec; the data model does not store per-zone time).
     static func heartRateSummary(_ data: ExportDataSet) -> String {
+        // Spec §12.9 order: leading workout_id (linked session) then HR summary.
         let header = [
-            "health_workout_id", "avg_bpm", "min_bpm", "max_bpm", "sample_count",
+            "workout_id", "health_workout_id", "avg_hr_bpm", "min_hr_bpm",
+            "max_hr_bpm", "hr_samples_count",
             "zone_1_seconds", "zone_2_seconds", "zone_3_seconds",
             "zone_4_seconds", "zone_5_seconds"
         ]
         let rows = data.healthWorkouts.map { h -> [String] in
             [
+                h.linkedSession?.id.uuidString ?? "",
                 h.id.uuidString,
                 str(h.avgHeartRateBpm),
                 str(h.minHeartRateBpm),
@@ -235,7 +245,7 @@ enum CSVExporter {
     /// body_weight.csv
     static func bodyWeight(_ data: ExportDataSet) -> String {
         let header = [
-            "entry_id", "timestamp", "weight_kg", "source",
+            "body_weight_entry_id", "timestamp", "weight_kg", "source",
             "apple_health_sample_id", "notes"
         ]
         let rows = data.bodyWeightEntries.map { b -> [String] in
@@ -254,8 +264,8 @@ enum CSVExporter {
     /// sleep.csv
     static func sleep(_ data: ExportDataSet) -> String {
         let header = [
-            "entry_id", "date", "start_time", "end_time", "duration_seconds",
-            "source", "subjective_sleep_quality", "apple_health_sample_id", "notes"
+            "sleep_entry_id", "date", "start_time", "end_time", "duration_seconds",
+            "sleep_source", "subjective_sleep_quality", "apple_health_sample_id", "notes"
         ]
         let rows = data.sleepEntries.map { s -> [String] in
             [
@@ -276,7 +286,7 @@ enum CSVExporter {
     /// journal_entries.csv
     static func journalEntries(_ data: ExportDataSet) -> String {
         let header = [
-            "entry_id", "workout_id", "exercise_id", "set_id",
+            "journal_entry_id", "workout_id", "exercise_id_optional", "set_id_optional",
             "timestamp", "entry_type", "text", "created_at", "updated_at"
         ]
         let rows = data.journalEntries.map { j -> [String] in
