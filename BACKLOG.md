@@ -14,8 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)** (`feat-f17-accessibility`)
-  Audit large screens; add VoiceOver labels/traits, dynamic-type-friendly layouts.
+_(idle — next item picked by the autonomous loop / cron heartbeat)_
 
 ## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
 - [ ] **F22 — CSV import**
@@ -23,6 +22,8 @@ item ships as its own pull request, based on the previous (merged) work on
 - [ ] **F13 — Heart-rate zones in export + summary**
   Store per-zone seconds on HealthWorkout (optional fields) computed at Health
   import; fill the heart_rate_summary.csv zone columns.
+- [ ] **F23 — Exercise-detail accessibility chart summaries**
+  Extend F17's chart-summary pattern to the exercise-detail charts (follow-up).
 
 ## Later — NEEDS A REAL XCODE BUILD before merge (new target / large surface)
 > These touch the Xcode project structure or a huge surface, which can't be
@@ -52,6 +53,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F18 — Training calendar heatmap** — GitHub-style training-days heatmap in Insights. PR #14 (merged).
 - [x] **F20 — Per-exercise rest** — optional per-exercise rest duration (UserDefaults by id), used by the active timer. PR #15 (merged).
 - [x] **F15 — Onboarding flow** — first-run paged explainer (privacy/units/Health/starter exercises), shown once. PR #16 (merged).
+- [x] **F17 — Accessibility pass** — VoiceOver labels/traits, combined elements, chart summaries, Dynamic Type guards across shared components + key screens. PR #17 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
