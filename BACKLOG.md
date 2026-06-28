@@ -14,9 +14,8 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F21 — Superset group in export (CSV/JSON)** (`feat-f21-superset-export`)
-  Add `superset_group` to sets.csv and the JSON set objects (Int), completing the
-  export↔import round-trip for the F10 field (the F11 importer already reads it).
+- [ ] **F18 — Rest-day / training calendar heatmap** (`feat-f18-heatmap`)
+  GitHub-style heatmap of training days over recent weeks, shown in Insights.
 
 ## Now (next up)
 
@@ -32,7 +31,6 @@ item ships as its own pull request, based on the previous (merged) work on
 - [ ] **F16 — Unit tests (StatsKit, export round-trip, weight conversion)**
   XCTest target covering the deterministic logic and export column contract.
 - [ ] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)**
-- [ ] **F18 — Rest-day / training calendar heatmap**
 
 ## Done
 <!-- merged items move here with PR links -->
@@ -47,6 +45,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F9 — Repeat last workout** — quick-start from the most recent workout via an auto-managed template, reusing the planned flow. PR #10 (merged).
 - [x] **F10 — Supersets** — optional supersetGroup field, set-entry tagging, badges in active workout & history. PR #11 (merged).
 - [x] **F11 — JSON import** — upsert-by-id restore of the JSON export (no deletes), fileImporter UI in Data management. PR #12 (merged).
+- [x] **F21 — Superset in export** — `superset_group` added to sets.csv + JSON (round-trips with F11 import). PR #13 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
