@@ -8,12 +8,19 @@ import SwiftData
 /// backfill flow for logging a past workout after the fact.
 struct HistoryView: View {
 
-    /// The two modes shown by the top picker.
+    /// The modes shown by the top picker.
     private enum Mode: String, CaseIterable, Identifiable {
         case workouts
         case journal
+        case insights
         var id: String { rawValue }
-        var label: String { self == .workouts ? "Workouts" : "Journal" }
+        var label: String {
+            switch self {
+            case .workouts: return "Workouts"
+            case .journal: return "Journal"
+            case .insights: return "Insights"
+            }
+        }
     }
 
     @Environment(\.modelContext) private var context
@@ -32,6 +39,7 @@ struct HistoryView: View {
                 switch mode {
                 case .workouts: workoutsList
                 case .journal: JournalTimelineView()
+                case .insights: InsightsView()
                 }
             }
             .navigationTitle("History")
@@ -43,15 +51,17 @@ struct HistoryView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 260)
+                    .frame(maxWidth: 320)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingBackfill = true
-                    } label: {
-                        Image(systemName: "plus")
+                if mode == .workouts {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showingBackfill = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .accessibilityLabel("Backfill past workout")
                     }
-                    .accessibilityLabel("Backfill past workout")
                 }
             }
             .sheet(isPresented: $showingBackfill) {
