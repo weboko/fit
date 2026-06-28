@@ -9,6 +9,10 @@ enum AppSettingsKeys {
     static let defaultExportIncludesJournal = "fit.settings.export.includeJournal"
     static let defaultRestSeconds = "fit.settings.defaultRestSeconds"
     static let restAlertsEnabled = "fit.settings.restAlertsEnabled"
+    /// Per-exercise rest override (F20): keyed by `exercise.id.uuidString`
+    /// appended to this prefix. Stored in seconds; an absent/0 value means the
+    /// exercise uses the global default rest length.
+    static let exerciseRestPrefix = "fit.rest.exercise."
     /// Plate calculator (F8): default bar weight in kg, and the comma-joined
     /// list of enabled per-side plate sizes in kg.
     static let barWeightKg = "fit.settings.barWeightKg"

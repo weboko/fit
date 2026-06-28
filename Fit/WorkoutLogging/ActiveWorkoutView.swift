@@ -110,10 +110,13 @@ struct ActiveWorkoutView: View {
             restTimer.tick()
         }
         .onChange(of: session.orderedSets.count) { _, newCount in
-            // A newly-saved set starts the rest countdown for the default length.
+            // A newly-saved set starts the rest countdown using the newest set's
+            // per-exercise rest override (F20), falling back to the global
+            // default. The F5 notification scheduling rides the same `start`
+            // (via onRestStarted), so it uses the resolved duration too.
             if newCount > savedSetCount {
                 saveHapticTrigger += 1
-                restTimer.start(RestTimerDefaults.defaultRestSeconds)
+                restTimer.start(RestTimerDefaults.restSeconds(forExerciseId: newestSet?.exercise?.id))
                 celebrateIfPersonalRecord()
             }
             savedSetCount = newCount
