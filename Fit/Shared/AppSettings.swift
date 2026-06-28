@@ -20,6 +20,9 @@ enum AppSettingsKeys {
     /// Repeat last workout (F9): the id of the single auto-managed "quick start"
     /// template so we refresh that one template instead of creating clutter.
     static let quickStartTemplateId = "fit.quickStart.templateId"
+    /// First-run onboarding (F15): set to `true` once the user has completed or
+    /// skipped the onboarding flow so it is only ever shown on first launch.
+    static let hasOnboarded = "fit.settings.hasOnboarded"
 }
 
 /// App-level metadata used in exports and the Settings screen.

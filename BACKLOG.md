@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F15 — Onboarding flow** (`feat-f15-onboarding`)
+- [x] **F15 — Onboarding flow** (`feat-f15-onboarding`)
   First-run explainer (privacy, Health, units) + optional starter exercises.
 
 ## Now (next up)
