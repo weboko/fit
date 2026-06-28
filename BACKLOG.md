@@ -14,9 +14,8 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F20 — Per-exercise default rest override** (`feat-f20-per-exercise-rest`)
-  Optional per-exercise rest duration; the active workout reads it when present,
-  falling back to the global default.
+- [ ] **F15 — Onboarding flow** (`feat-f15-onboarding`)
+  First-run explainer (privacy, Health, units) + optional starter exercises.
 
 ## Now (next up)
 
@@ -27,8 +26,6 @@ item ships as its own pull request, based on the previous (merged) work on
   Compute per-zone seconds from imported HR samples; fill the zone columns.
 - [ ] **F14 — Home-screen widget (last workout / streak)**
   WidgetKit extension showing streak and last session summary.
-- [ ] **F15 — Onboarding flow**
-  First-run explainer (privacy, Health, units) + optional starter exercises.
 - [ ] **F16 — Unit tests (StatsKit, export round-trip, weight conversion)**
   XCTest target covering the deterministic logic and export column contract.
 - [ ] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)**
@@ -48,6 +45,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F11 — JSON import** — upsert-by-id restore of the JSON export (no deletes), fileImporter UI in Data management. PR #12 (merged).
 - [x] **F21 — Superset in export** — `superset_group` added to sets.csv + JSON (round-trips with F11 import). PR #13 (merged).
 - [x] **F18 — Training calendar heatmap** — GitHub-style training-days heatmap in Insights. PR #14 (merged).
+- [x] **F20 — Per-exercise rest** — optional per-exercise rest duration (UserDefaults by id), used by the active timer. PR #15 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
