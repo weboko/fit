@@ -83,6 +83,7 @@ enum JSONExporter {
         let pain_location: String?
         let is_warmup: Bool
         let is_failed: Bool
+        let superset_group: Int?
         let source: String
         let notes: String?
         let created_at: String
@@ -195,6 +196,7 @@ enum JSONExporter {
             pain_location: s.painLocation?.rawValue,
             is_warmup: s.isWarmup,
             is_failed: s.isFailed,
+            superset_group: s.supersetGroup,
             source: s.source.rawValue,
             notes: nilIfEmpty(s.notes),
             created_at: ExportFormatting.iso(s.createdAt),

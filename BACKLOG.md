@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F21 — Superset group in export (CSV/JSON)** (`feat-f21-superset-export`)
+- [x] **F21 — Superset group in export (CSV/JSON)** (`feat-f21-superset-export`)
   Add `superset_group` to sets.csv and the JSON set objects (Int), completing the
   export↔import round-trip for the F10 field (the F11 importer already reads it).
 
