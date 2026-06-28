@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 /// Data management screen (spec §23): shows how much is stored, lets the user
-/// (re)seed the starter exercises, and offers a clearly destructive
-/// "delete all data" action behind a confirmation alert.
+/// (re)seed the starter exercises, restore from a prior JSON export, and offers a
+/// clearly destructive "delete all data" action behind a confirmation alert.
 struct DataManagementView: View {
     @Environment(\.modelContext) private var context
 
@@ -13,10 +14,18 @@ struct DataManagementView: View {
     @State private var statusMessage: String?
     @State private var isWorking = false
 
+    // Import (F11) state.
+    @State private var showImporter = false
+    @State private var showImportConfirmation = false
+    @State private var pendingImportURL: URL?
+    @State private var importSummary: ImportSummary?
+    @State private var importErrorMessage: String?
+
     var body: some View {
         Form {
             countsSection
             seedSection
+            importSection
             dangerSection
             if let statusMessage {
                 Section {
@@ -29,6 +38,25 @@ struct DataManagementView: View {
         .navigationTitle("Data management")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: refreshCounts)
+        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json]) { result in
+            handlePickedFile(result)
+        }
+        .alert("Restore from this file?", isPresented: $showImportConfirmation) {
+            Button("Import", action: runImport)
+            Button("Cancel", role: .cancel) { pendingImportURL = nil }
+        } message: {
+            Text("This merges the file into your data by matching on id: existing records are updated and new ones are added. Nothing is deleted. Your current data stays unless the file contains a record with the same id.")
+        }
+        .alert("Import complete", isPresented: importSummaryBinding) {
+            Button("OK", role: .cancel) { importSummary = nil }
+        } message: {
+            Text(importSummaryText)
+        }
+        .alert("Import failed", isPresented: importErrorBinding) {
+            Button("OK", role: .cancel) { importErrorMessage = nil }
+        } message: {
+            Text(importErrorMessage ?? "Something went wrong.")
+        }
         .alert("Delete all data?", isPresented: $showDeleteConfirmation) {
             Button("Delete everything", role: .destructive, action: deleteAllData)
             Button("Cancel", role: .cancel) {}
@@ -73,6 +101,23 @@ struct DataManagementView: View {
         }
     }
 
+    // MARK: - Import (restore from JSON export)
+
+    private var importSection: some View {
+        Section {
+            Button {
+                showImporter = true
+            } label: {
+                Label("Import data…", systemImage: "square.and.arrow.down")
+            }
+            .disabled(isWorking)
+        } header: {
+            Text("Restore")
+        } footer: {
+            Text("Restores a previously exported JSON file (fit_export.json). It merges by id — existing records are updated, new ones added, and nothing is ever deleted. Everything stays on this device.")
+        }
+    }
+
     // MARK: - Danger zone
 
     private var dangerSection: some View {
@@ -106,6 +151,68 @@ struct DataManagementView: View {
             statusMessage = "Starter exercises added."
         } catch {
             statusMessage = "Couldn't add starter exercises: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Import actions
+
+    /// Bindings that present the result / error alerts off the optional state.
+    private var importSummaryBinding: Binding<Bool> {
+        Binding(get: { importSummary != nil }, set: { if !$0 { importSummary = nil } })
+    }
+
+    private var importErrorBinding: Binding<Bool> {
+        Binding(get: { importErrorMessage != nil }, set: { if !$0 { importErrorMessage = nil } })
+    }
+
+    /// Human-readable summary of the last import for the result alert.
+    private var importSummaryText: String {
+        guard let s = importSummary else { return "" }
+        var lines = [
+            "Added \(s.insertedTotal), updated \(s.updatedTotal).",
+            "Workouts: +\(s.insertedWorkouts) / \(s.updatedWorkouts) updated",
+            "Sets: +\(s.insertedSets) / \(s.updatedSets) updated",
+            "Exercises: +\(s.insertedExercises) / \(s.updatedExercises) updated",
+            "Journal: +\(s.insertedJournalEntries) / \(s.updatedJournalEntries) updated"
+        ]
+        if !s.warnings.isEmpty {
+            let shown = s.warnings.prefix(5).joined(separator: "\n• ")
+            lines.append("\nWarnings (\(s.warnings.count)):\n• \(shown)")
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// Capture the picked URL and ask for confirmation before touching any data.
+    private func handlePickedFile(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            pendingImportURL = url
+            showImportConfirmation = true
+        case .failure(let error):
+            importErrorMessage = error.localizedDescription
+        }
+    }
+
+    /// Read the confirmed file and run the merge. Runs on the main context for
+    /// simplicity; the engine only inserts/updates and never deletes.
+    private func runImport() {
+        guard let url = pendingImportURL else { return }
+        pendingImportURL = nil
+        isWorking = true
+        defer { isWorking = false }
+
+        // The file lives outside the app sandbox (Files / iCloud), so we must hold
+        // a security-scoped resource for the duration of the read.
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+
+        do {
+            let data = try Data(contentsOf: url)
+            let summary = try DataImportService().importJSON(data, into: context)
+            importSummary = summary
+            refreshCounts()
+        } catch {
+            importErrorMessage = error.localizedDescription
         }
     }
 
