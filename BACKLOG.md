@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F10 — Superset / circuit grouping** (`feat-f10-supersets`)
+- [x] **F10 — Superset / circuit grouping** (`feat-f10-supersets`)
   Allow grouping exercises within a session as a superset for logging order.
   Scope: optional `supersetGroup` on a set + tagging in set entry + badges in
   active workout & history. Export of the field split to F21.

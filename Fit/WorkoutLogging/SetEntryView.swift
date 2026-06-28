@@ -37,6 +37,8 @@ struct SetEntryView: View {
     @State private var painLocation: PainLocation?
     @State private var isWarmup = false
     @State private var note = ""
+    /// Superset group for this set: nil = none, 1 = A, 2 = B, … (F10).
+    @State private var supersetGroup: Int?
 
     @State private var didLoadDefaults = false
     @State private var showPlateCalculator = false
@@ -160,6 +162,8 @@ struct SetEntryView: View {
                         }
                     }
 
+                    supersetPicker
+
                     VStack(alignment: .leading, spacing: Theme.Spacing.s) {
                         Text("Note")
                             .font(.subheadline.weight(.semibold))
@@ -173,6 +177,34 @@ struct SetEntryView: View {
             } label: {
                 Label("More detail", systemImage: "slider.horizontal.3")
                     .font(.subheadline.weight(.semibold))
+            }
+        }
+    }
+
+    // MARK: - Superset picker (F10)
+
+    /// Groups offered in the picker: None plus A–D (1…4). Kept short for fast
+    /// entry; the model supports more (see `SupersetGroup`).
+    private let supersetOptions = Array(1...4)
+
+    private var supersetPicker: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            Text("Superset")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            FlowLayout {
+                OptionChip(title: "None",
+                           isSelected: supersetGroup == nil,
+                           tint: .purple) {
+                    supersetGroup = nil
+                }
+                ForEach(supersetOptions, id: \.self) { number in
+                    OptionChip(title: SupersetGroup.letter(for: number) ?? "\(number)",
+                               isSelected: supersetGroup == number,
+                               tint: .purple) {
+                        supersetGroup = (supersetGroup == number) ? nil : number
+                    }
+                }
             }
         }
     }
@@ -282,6 +314,10 @@ struct SetEntryView: View {
         bodyWeightKg = suggestion.bodyWeightKg ?? defaultBodyWeight
         reps = suggestion.reps
         // Effort and qualitative fields are intentionally left blank for each set.
+
+        // Keep the superset grouping for additional sets of the same exercise in
+        // this session, so a superset exercise stays in its group by default.
+        supersetGroup = WorkoutLoggingHelpers.lastSupersetGroup(for: exercise, in: session)
     }
 
     /// Applies a template-derived prefill, filling the load field that matches
@@ -354,6 +390,7 @@ struct SetEntryView: View {
         set.limiter = limiter
         set.painSeverity = painSeverity
         set.painLocation = (painSeverity != nil && painSeverity != PainSeverity.none) ? painLocation : nil
+        set.supersetGroup = supersetGroup
         set.notes = note.trimmingCharacters(in: .whitespacesAndNewlines)
 
         set.workout = session

@@ -110,6 +110,16 @@ enum WorkoutLoggingHelpers {
         (session.orderedSets.map(\.setIndex).max() ?? -1) + 1
     }
 
+    /// The superset group (1 = A, 2 = B, …) most recently used for this exercise
+    /// within the session, so additional sets of a superset exercise keep their
+    /// group by default. Returns nil when the exercise has no grouped set yet.
+    static func lastSupersetGroup(for exercise: Exercise, in session: WorkoutSession) -> Int? {
+        session.orderedSets
+            .filter { $0.exercise?.id == exercise.id }
+            .max { $0.setIndex < $1.setIndex }?
+            .supersetGroup
+    }
+
     /// How many working/total sets of an exercise are already logged in the
     /// session (for display like "Set 3").
     static func setNumber(for exercise: Exercise, in session: WorkoutSession) -> Int {
@@ -197,6 +207,7 @@ struct LoggedSetRow: View {
                             .font(.caption2)
                             .foregroundStyle(.red)
                     }
+                    SupersetBadge(group: set.supersetGroup, compact: true)
                 }
                 if let detail = subdetail {
                     Text(detail)

@@ -107,6 +107,35 @@ struct DetailRow: View {
     }
 }
 
+/// A compact purple capsule flagging a set's superset / circuit group (F10),
+/// e.g. "Superset A". Renders nothing when the set has no group, so callers can
+/// place it unconditionally. Styled like `SourceBadge`/`PRBadge`.
+struct SupersetBadge: View {
+    let group: Int?
+    var compact: Bool = false
+
+    private let tint: Color = .purple
+
+    var body: some View {
+        if let label = group.flatMap(SupersetGroup.letter(for:)) {
+            Label {
+                Text(compact ? label : "Superset \(label)")
+                    .fontWeight(.semibold)
+            } icon: {
+                Image(systemName: "arrow.triangle.2.circlepath")
+            }
+            .font(.caption2.weight(.medium))
+            .padding(.horizontal, Theme.Spacing.s)
+            .padding(.vertical, 2)
+            .background(tint.opacity(0.15))
+            .foregroundStyle(tint)
+            .clipShape(Capsule())
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Superset \(label)")
+        }
+    }
+}
+
 /// A pill that flags imported/backfilled provenance.
 struct SourceBadge: View {
     let text: String
