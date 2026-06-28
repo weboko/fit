@@ -66,6 +66,7 @@ struct SettingsView: View {
                 restSection
                 syncSection
                 healthSection
+                trackingSection
                 exportSection
                 dataSection
                 aboutSection
@@ -163,6 +164,22 @@ struct SettingsView: View {
             Text("Apple Health")
         } footer: {
             Text("Health access is read-only. Imported workouts, body weight and sleep are clearly marked and never overwrite anything you logged manually.")
+        }
+    }
+
+    // MARK: - Tracking (body weight) — F6
+
+    private var trackingSection: some View {
+        Section {
+            NavigationLink {
+                BodyWeightView()
+            } label: {
+                Label("Body weight", systemImage: "scalemass")
+            }
+        } header: {
+            Text("Tracking")
+        } footer: {
+            Text("Log your body weight over time. The latest value is offered as the default when you log bodyweight exercises.")
         }
     }
 

@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F6 — Body-weight tracking screen + trend chart** (`feat-f6-bodyweight`)
+- [x] **F6 — Body-weight tracking screen + trend chart** (`feat-f6-bodyweight`)
   Manual body-weight entry UI + chart over time (BodyWeightEntry already exists),
   surfaced in Settings/History; feeds bodyweight-mode set defaults.
 
