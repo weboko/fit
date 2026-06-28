@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F20 — Per-exercise default rest override** (`feat-f20-per-exercise-rest`)
+- [x] **F20 — Per-exercise default rest override** (`feat-f20-per-exercise-rest`)
   Optional per-exercise rest duration; the active workout reads it when present,
   falling back to the global default.
 

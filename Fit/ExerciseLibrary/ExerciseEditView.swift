@@ -20,6 +20,10 @@ struct ExerciseEditView: View {
     @State private var secondaryMuscles: Set<MuscleGroup>
     @State private var notes: String
 
+    /// Per-exercise rest override (F20) in whole seconds, or `nil` to use the
+    /// global default. Persisted to `UserDefaults` on change, like F3 goals.
+    @State private var restOverrideSeconds: Int?
+
     // Alias editing buffers.
     @State private var aliasDrafts: [AliasDraft]
     @State private var newAliasName = ""
@@ -35,6 +39,7 @@ struct ExerciseEditView: View {
         _primaryMuscles = State(initialValue: Set(exercise.primaryMuscles))
         _secondaryMuscles = State(initialValue: Set(exercise.secondaryMuscles))
         _notes = State(initialValue: exercise.notes)
+        _restOverrideSeconds = State(initialValue: RestTimerDefaults.overrideSeconds(forExerciseId: exercise.id))
         let drafts = (exercise.aliases ?? []).map {
             AliasDraft(existing: $0, name: $0.aliasName, language: $0.languageOptional ?? "")
         }
@@ -56,6 +61,18 @@ struct ExerciseEditView: View {
                     ForEach(Array(WeightMode.allCases)) { mode in
                         Text(mode.displayName).tag(mode)
                     }
+                }
+            }
+
+            Section("Rest timer") {
+                Picker("Default rest", selection: $restOverrideSeconds) {
+                    Text("Use global default").tag(Int?.none)
+                    ForEach(Self.restOptions, id: \.self) { seconds in
+                        Text(Format.duration(TimeInterval(seconds))).tag(Int?.some(seconds))
+                    }
+                }
+                .onChange(of: restOverrideSeconds) { _, new in
+                    RestTimerDefaults.setOverrideSeconds(new, forExerciseId: exercise.id)
                 }
             }
 
@@ -138,6 +155,9 @@ struct ExerciseEditView: View {
     }
 
     // MARK: - Derived
+
+    /// Selectable per-exercise rest lengths (seconds) for the F20 override picker.
+    private static let restOptions = [30, 45, 60, 75, 90, 120, 150, 180]
 
     private var trimmedName: String {
         canonicalName.trimmingCharacters(in: .whitespacesAndNewlines)

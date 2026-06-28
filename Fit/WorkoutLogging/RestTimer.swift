@@ -146,12 +146,50 @@ struct RestTimerBar: View {
 }
 
 /// The default rest length, read from `UserDefaults`, falling back to 90s.
+///
+/// F20 adds an optional per-exercise override, stored in `UserDefaults` keyed by
+/// the exercise id (no model change), mirroring the F3 `GoalTargets` pattern.
 enum RestTimerDefaults {
     static let fallbackSeconds: TimeInterval = 90
 
     static var defaultRestSeconds: TimeInterval {
         let stored = UserDefaults.standard.double(forKey: AppSettingsKeys.defaultRestSeconds)
         return stored > 0 ? stored : fallbackSeconds
+    }
+
+    /// Builds the per-exercise override key, or `nil` when there is no exercise.
+    private static func overrideKey(forExerciseId id: UUID?) -> String? {
+        guard let id else { return nil }
+        return AppSettingsKeys.exerciseRestPrefix + id.uuidString
+    }
+
+    /// The stored per-exercise override in whole seconds, or `nil` when the
+    /// exercise has no override (and should use the global default).
+    static func overrideSeconds(forExerciseId id: UUID?) -> Int? {
+        guard let key = overrideKey(forExerciseId: id),
+              UserDefaults.standard.object(forKey: key) != nil else { return nil }
+        let value = UserDefaults.standard.integer(forKey: key)
+        return value > 0 ? value : nil
+    }
+
+    /// Sets (or clears) the per-exercise override. A `nil` or non-positive value
+    /// removes the key so the exercise falls back to the global default.
+    static func setOverrideSeconds(_ seconds: Int?, forExerciseId id: UUID?) {
+        guard let key = overrideKey(forExerciseId: id) else { return }
+        if let seconds, seconds > 0 {
+            UserDefaults.standard.set(seconds, forKey: key)
+        } else {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
+    /// Resolves the rest length to start for a set of the given exercise: the
+    /// per-exercise override when present (> 0), otherwise the global default.
+    static func restSeconds(forExerciseId id: UUID?) -> TimeInterval {
+        if let override = overrideSeconds(forExerciseId: id) {
+            return TimeInterval(override)
+        }
+        return defaultRestSeconds
     }
 }
 
