@@ -14,17 +14,13 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F10 — Superset / circuit grouping** (`feat-f10-supersets`)
-  Allow grouping exercises within a session as a superset for logging order.
-  Scope: optional `supersetGroup` on a set + tagging in set entry + badges in
-  active workout & history. Export of the field split to F21.
+- [ ] **F11 — JSON import (restore from a prior export)** (`feat-f11-import`)
+  Round-trip the JSON export back into the store (upsert by id), enabling
+  backup/restore and migration. Scope: JSON only; CSV import split to F22.
 
 ## Now (next up)
 
 ## Later
-- [ ] **F11 — CSV/JSON import (restore from a prior export)**
-  Round-trip the export format back into the store (merge by id), enabling
-  backup/restore and migration.
 - [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
   Externalize strings; provide initial translations for the user's languages.
 - [ ] **F13 — Heart-rate zones in export + summary**
@@ -49,6 +45,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F7 — Insights analytics** — frequency + per-muscle volume/sets charts over a time range, third History mode. PR #8 (merged).
 - [x] **F8 — Plate calculator** — greedy per-side plate math + view, reachable from external-mode set entry. PR #9 (merged).
 - [x] **F9 — Repeat last workout** — quick-start from the most recent workout via an auto-managed template, reusing the planned flow. PR #10 (merged).
+- [x] **F10 — Supersets** — optional supersetGroup field, set-entry tagging, badges in active workout & history. PR #11 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
@@ -58,3 +55,5 @@ item ships as its own pull request, based on the previous (merged) work on
 - [ ] **F21 — Superset group in export (CSV/JSON)**
   Add the `superset_group` column to sets.csv and the JSON set objects once F10
   lands the field. (Follow-up split out of F10.)
+- [ ] **F22 — CSV import**
+  Import the multi-CSV export back into the store (complements F11's JSON import).
