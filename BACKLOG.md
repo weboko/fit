@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F22 — CSV import** (`feat-f22-csv-import`)
+- [x] **F22 — CSV import** (`feat-f22-csv-import`)
   Import the multi-CSV export back into the store (complements F11's JSON import).
 
 ## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
@@ -56,5 +56,5 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
-- [ ] **F22 — CSV import**
+- [x] **F22 — CSV import**
   Import the multi-CSV export back into the store (complements F11's JSON import).
