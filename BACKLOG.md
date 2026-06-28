@@ -14,11 +14,10 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-_(idle — next item picked by the autonomous loop / cron heartbeat)_
+- [ ] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)** (`feat-f17-accessibility`)
+  Audit large screens; add VoiceOver labels/traits, dynamic-type-friendly layouts.
 
 ## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
-- [ ] **F17 — Accessibility pass (Dynamic Type, VoiceOver labels, contrast)**
-  Audit large screens; add VoiceOver labels/traits, dynamic-type-friendly layouts.
 - [ ] **F22 — CSV import**
   Import the multi-CSV export back into the store (complements F11's JSON import).
 - [ ] **F13 — Heart-rate zones in export + summary**
