@@ -23,6 +23,29 @@ struct SettingsView: View {
     /// Whether a freshly-opened Export should include journal entries by default.
     @AppStorage(AppSettingsKeys.defaultExportIncludesJournal) private var exportIncludesJournal: Bool = true
 
+    /// Whether a local notification fires when the between-sets rest timer ends.
+    /// Opt-in: also requires the system notification permission (F5).
+    @AppStorage(AppSettingsKeys.restAlertsEnabled) private var restAlertsEnabled: Bool = false
+
+    /// Default rest length in seconds, shared with the active-workout timer.
+    /// `0`/unset is treated as the 90s fallback for display and selection (F5/F19).
+    @AppStorage(AppSettingsKeys.defaultRestSeconds) private var defaultRestSeconds: Int = 0
+
+    /// Shown when the user enables alerts but notification permission is denied.
+    @State private var restPermissionDenied = false
+
+    /// The rest durations offered by the picker, in seconds.
+    private let restDurationOptions = [30, 45, 60, 75, 90, 120, 150, 180]
+
+    /// Picker binding that maps `0`/unset onto the 90s fallback so the control
+    /// always shows a concrete, valid selection.
+    private var restSecondsSelection: Binding<Int> {
+        Binding(
+            get: { defaultRestSeconds > 0 ? defaultRestSeconds : 90 },
+            set: { defaultRestSeconds = $0 }
+        )
+    }
+
     private var selectedUnit: Binding<WeightUnit> {
         Binding(
             get: { WeightUnit(rawValue: weightUnitRaw) ?? .kg },
@@ -40,6 +63,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 unitsSection
+                restSection
                 syncSection
                 healthSection
                 exportSection
@@ -63,6 +87,44 @@ struct SettingsView: View {
             Text("Units")
         } footer: {
             Text("Weights are always stored and exported in kilograms. This only changes what you see and type.")
+        }
+    }
+
+    // MARK: - Rest (timer alerts + default duration) — F5 / F19
+
+    private var restSection: some View {
+        Section {
+            Toggle("Rest timer alerts", isOn: $restAlertsEnabled)
+                .onChange(of: restAlertsEnabled) { _, isOn in
+                    if isOn { confirmNotificationPermission() }
+                }
+            Picker("Default rest", selection: restSecondsSelection) {
+                ForEach(restDurationOptions, id: \.self) { seconds in
+                    Text(Format.duration(TimeInterval(seconds))).tag(seconds)
+                }
+            }
+        } header: {
+            Text("Rest")
+        } footer: {
+            if restPermissionDenied {
+                Text("Notifications are turned off for Fit. Enable them in iOS Settings to get alerts when a rest ends.")
+                    .foregroundStyle(.red)
+            } else {
+                Text("The default rest length starts the between-sets timer after each saved set. Alerts post a notification when a rest ends and need notification permission.")
+            }
+        }
+    }
+
+    /// Requests notification permission when the user enables alerts. If the
+    /// request is denied, the toggle is reverted and the footnote explains why.
+    private func confirmNotificationPermission() {
+        restPermissionDenied = false
+        Task { @MainActor in
+            let granted = await RestNotifier.requestAuthorization()
+            if !granted {
+                restAlertsEnabled = false
+                restPermissionDenied = true
+            }
         }
     }
 

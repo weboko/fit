@@ -24,6 +24,9 @@ struct ActiveWorkoutView: View {
     @State private var prCelebrationKinds: Set<PRKind> = []
     /// Bumped each time a PR is detected so `.sensoryFeedback` fires once.
     @State private var prHapticTrigger = 0
+    /// Bumped each time a set is saved so a light save haptic fires once (F5),
+    /// kept separate from the F2 PR success haptic so both can coexist.
+    @State private var saveHapticTrigger = 0
     /// Identifies the current banner so a stale auto-dismiss cannot hide a newer one.
     @State private var prBannerToken = UUID()
 
@@ -100,6 +103,7 @@ struct ActiveWorkoutView: View {
         .onAppear {
             savedSetCount = session.orderedSets.count
             loadActiveTemplate()
+            wireRestNotifications()
         }
         .onReceive(ticker) { value in
             now = value
@@ -108,12 +112,14 @@ struct ActiveWorkoutView: View {
         .onChange(of: session.orderedSets.count) { _, newCount in
             // A newly-saved set starts the rest countdown for the default length.
             if newCount > savedSetCount {
+                saveHapticTrigger += 1
                 restTimer.start(RestTimerDefaults.defaultRestSeconds)
                 celebrateIfPersonalRecord()
             }
             savedSetCount = newCount
         }
         .sensoryFeedback(.success, trigger: prHapticTrigger)
+        .sensoryFeedback(.impact(weight: .light), trigger: saveHapticTrigger)
         .sheet(item: $pickerMode) { _ in
             ExercisePickerView { exercise in
                 // Open set entry immediately after choosing.
@@ -368,6 +374,28 @@ struct ActiveWorkoutView: View {
     private func startPlanned(_ item: TemplateItem) {
         guard let exercise = item.exercise else { return }
         plannedEntryTarget = PlannedSetTarget(exercise: exercise, prefill: SetPrefill(item: item))
+    }
+
+    // MARK: - Rest notifications (F5, additive)
+
+    /// Mirrors the rest-timer lifecycle into a local notification so the user is
+    /// alerted when the rest ends even if the app is backgrounded. The hooks
+    /// default to `nil` on `RestTimerModel`, so this wiring is purely additive
+    /// and leaves the in-app F1 countdown behaviour unchanged.
+    ///
+    /// - start → schedule an alert for the full rest length.
+    /// - ±15s (change) → reschedule for the new remaining time.
+    /// - stop / skip / reaching 0 → cancel any pending alert.
+    private func wireRestNotifications() {
+        restTimer.onRestStarted = { seconds in
+            RestNotifier.scheduleRestEnd(after: seconds)
+        }
+        restTimer.onRestChanged = { remaining in
+            RestNotifier.scheduleRestEnd(after: remaining)
+        }
+        restTimer.onRestEnded = {
+            RestNotifier.cancel()
+        }
     }
 
     // MARK: - Actions
