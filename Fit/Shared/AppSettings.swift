@@ -13,6 +13,9 @@ enum AppSettingsKeys {
     /// list of enabled per-side plate sizes in kg.
     static let barWeightKg = "fit.settings.barWeightKg"
     static let enabledPlatesCSV = "fit.settings.enabledPlatesCSV"
+    /// Repeat last workout (F9): the id of the single auto-managed "quick start"
+    /// template so we refresh that one template instead of creating clutter.
+    static let quickStartTemplateId = "fit.quickStart.templateId"
 }
 
 /// App-level metadata used in exports and the Settings screen.
