@@ -13,29 +13,50 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ---
 
-## In progress
-- [ ] **F24 — CI: real macOS compiler check** (PR open)
-  GitHub Actions workflow (`.github/workflows/ios-build.yml`) that builds the
-  app on a `macos-15` runner for the iOS Simulator with signing disabled.
-  **Strategic:** this is the project's first true compile gate. Until now every
-  PR was "verified by review, not compiled"; once this is green on `main`, every
-  future PR is actually compiled by the runner. This *unblocks* the "needs a real
-  Xcode build" tier below — those items become safe to merge once CI is green on
-  their branch.
+> **Milestone (2026-06-28):** F24 landed a real macOS compile gate and the first
+> ever build **failed** — `main` did not compile (a non-existent
+> `Section(_:content:footer:)` initializer + a MainActor-isolation error that 18
+> review-only PRs had all missed). Both fixed; `main` is now green. A full
+> read-only SPEC audit (see `scratchpad/audit-report.md`) confirmed the app is
+> **strongly coherent with SPEC.md**, no-AI/no-network clean, with no other
+> crash/compile hazards — only low-severity defects in the optional import path.
+> Grooming below folds in that audit. The "Later" tier is no longer blind: every
+> PR is compiled by CI before merge.
 
-## Now (next up) — compiler-safe, additive
+## In progress
+- [ ] **F25 — Populate `body_weight_kg_imported` in workouts.csv**
+  Audit deviation #2 / idea #1. The spec §12.4 column is currently hard-coded
+  empty (`CSVExporter.swift:86`). Fill it from the nearest same-day
+  Health-imported `BodyWeightEntry`, so an external AI can correlate bodyweight
+  with performance per-workout. Pure exporter change; no model/migration.
+
+## Now (next up) — ROI-ranked, compiler-safe, additive
+- [ ] **F26 — Import integrity (stop blank-overwrite + honest errors)**
+  Audit deviation #1/#3. The "upsert, never deletes" import path actually blanks
+  a populated `title`/`notes` when a re-imported record omits that optional
+  field (`DataImportService.swift`, `CSVImportService.swift`). Fix: only assign
+  when present. Also: `ImportError.unreadable` always says "Fit **JSON** export"
+  even on the CSV path → generic wording; add a per-file short/long-row warning
+  count. The only real data-loss risk in the app; small + contained.
 - [ ] **F13 — Heart-rate zones in export + summary**
-  Store per-zone seconds on HealthWorkout (optional fields) computed at Health
-  import; fill the heart_rate_summary.csv zone columns.
+  Store optional per-zone seconds on `HealthWorkout` (CloudKit-safe defaults)
+  computed at Health import; fill the `heart_rate_summary.csv` zone_1..5 columns
+  (spec §12.9, currently always blank). Needs a max-HR setting (default 190) for
+  zone boundaries (% of max). Additive model fields → lightweight migration.
+- [ ] **F27 — Remove dead `HealthImportService.suggestedWorkouts(for:in:)`**
+  Audit noise item: unused; `HealthLinkSection` re-implements the overlap filter
+  inline. Delete (DRY). Trivial; can ride along with another PR.
 - [ ] **F23 — Exercise-detail accessibility chart summaries**
   Extend F17's chart-summary pattern to the exercise-detail charts (follow-up).
 
-## Later — larger surface (now gated by F24 CI build instead of blind-merge fear)
-> Once F24 CI is green on `main`, these are no longer "blind"; the runner
-> compiles each PR. Still land them one at a time and watch the CI result before
-> merging.
-- [ ] **F16 — Unit tests (StatsKit, export/import round-trip, weight conversion)**
-  Needs a new XCTest target (pbxproj change) — CI will now compile/run it.
+## Later — larger surface (now CI-compiled per PR, no longer blind)
+> Every PR is compiled by F24 CI before merge; land these one at a time and watch
+> the run. The pbxproj risk is real (new targets in a file-system-synchronized
+> Xcode-16 project) so verify CI stays green.
+- [ ] **F16 — Unit tests (StatsKit, PersonalRecords, CSV parser, export→import round-trip)**
+  Audit idea #3 — highest leverage given the "never compiled locally" history;
+  would have caught the import blank-overwrite (F26). Needs a new XCTest target
+  (pbxproj change); add a `test` job to the CI workflow to actually run it.
 - [ ] **F14 — Home-screen widget (last workout / streak)**
   Needs a new WidgetKit app-extension target (pbxproj change) — CI compiles it.
 - [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
@@ -43,6 +64,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F24 — CI macOS compiler check** — `.github/workflows/ios-build.yml` builds the app on a `macos-15` runner (iOS Simulator, unsigned) on every PR + push to main. First run revealed `main` did not compile; fixed two errors in the same PR. PR #19 (merged).
 - [x] **F1 — Rest timer** — in-app between-sets countdown with ±15s/skip, wired into the active workout. PR #2 (merged).
 - [x] **F2 — Personal records** — deterministic PR detection (load/reps/est-1RM), badges in history & exercise detail, on-save haptic + banner. PR #3 (merged).
 - [x] **F3 — Goal trackers** — per-goal cards (best/target/distance, trend), UserDefaults targets, reachable from Exercises + Today. PR #4 (merged).
