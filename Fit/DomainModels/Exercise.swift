@@ -35,6 +35,11 @@ final class Exercise {
     @Relationship(deleteRule: .nullify, inverse: \WorkoutSet.exercise)
     var sets: [WorkoutSet]? = []
 
+    /// Inverse of `TemplateItem.exercise`. Deleting an exercise nullifies the
+    /// reference on any template items rather than deleting the template entry.
+    @Relationship(deleteRule: .nullify, inverse: \TemplateItem.exercise)
+    var templateItems: [TemplateItem]? = []
+
     init(
         id: UUID = UUID(),
         canonicalName: String = "",

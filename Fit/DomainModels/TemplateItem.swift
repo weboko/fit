@@ -32,11 +32,10 @@ final class TemplateItem {
     /// exercise is later renamed, merged or archived (mirrors `WorkoutSet`).
     var exerciseNameAtTime: String = ""
 
-    // Relationships. Inverse for `template` is declared on `WorkoutTemplate`.
+    // Relationships. Inverses are declared on the parent sides
+    // (`WorkoutTemplate.items` and `Exercise.templateItems`); SwiftData +
+    // CloudKit requires every relationship to have an inverse.
     var template: WorkoutTemplate?
-    /// Plain (nullify) reference to the exercise; no inverse declared here so we
-    /// do not add a back-reference array to `Exercise`.
-    @Relationship(deleteRule: .nullify)
     var exercise: Exercise?
 
     init(
