@@ -193,6 +193,7 @@ struct WorkoutDetailView: View {
             Text(Format.setSummary(set))
                 .font(.body.monospacedDigit())
             PRBadge(kinds: prKinds)
+            SupersetBadge(group: set.supersetGroup)
             Spacer(minLength: Theme.Spacing.s)
             if let effort = set.effort {
                 Text(EffortScale.shortLabel(for: effort))

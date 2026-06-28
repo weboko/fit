@@ -41,6 +41,11 @@ final class WorkoutSet {
     var isWarmup: Bool = false
     var isFailed: Bool = false
 
+    /// Optional superset / circuit grouping within a session (F10). `nil` means
+    /// the set is not part of a superset; `1` = group A, `2` = group B, … Stored
+    /// as an optional Int so it's CloudKit-safe and needs no schema/init change.
+    var supersetGroup: Int?
+
     var sourceRaw: String = RecordSource.manual.rawValue
     var notes: String = ""
 
@@ -65,6 +70,54 @@ final class WorkoutSet {
         self.sourceRaw = source.rawValue
         self.createdAt = Date()
         self.updatedAt = Date()
+    }
+}
+
+// MARK: - Superset grouping (F10)
+
+/// Bidirectional mapping between a stored superset group number (1, 2, …) and
+/// its display letter ("A", "B", …). Kept deliberately small (≈6 groups) since
+/// supersets/circuits rarely chain more than a handful of exercises.
+enum SupersetGroup {
+    /// How many distinct groups the UI offers (A…F).
+    static let maxGroups = 6
+
+    /// The group numbers the picker offers, in order: 1…maxGroups.
+    static let allNumbers = Array(1...maxGroups)
+
+    /// Letter for a group number: 1 → "A", 2 → "B", … Returns nil for values
+    /// outside the supported range (including 0 / negatives).
+    static func letter(for number: Int) -> String? {
+        guard number >= 1, number <= maxGroups else { return nil }
+        // 65 == "A"; the guard keeps the byte in the printable A…F range.
+        let scalar = UnicodeScalar(UInt8(64 + number))
+        return String(Character(scalar))
+    }
+
+    /// Group number for a letter: "A" → 1, "b" → 2, … Returns nil when the
+    /// letter is outside the supported range.
+    static func number(for letter: String) -> Int? {
+        guard let first = letter.uppercased().unicodeScalars.first else { return nil }
+        let value = Int(first.value) - 64
+        return (1...maxGroups).contains(value) ? value : nil
+    }
+
+    /// "Superset A", "Superset B", … for a group number, or nil if out of range.
+    static func displayName(for number: Int) -> String? {
+        letter(for: number).map { "Superset \($0)" }
+    }
+}
+
+extension WorkoutSet {
+    /// The single-letter label for this set's superset group ("A"/"B"/…), or nil
+    /// when the set is not part of a superset.
+    var supersetLabel: String? {
+        supersetGroup.flatMap(SupersetGroup.letter(for:))
+    }
+
+    /// "Superset A" / "Superset B" / … for badge display, or nil when ungrouped.
+    var supersetDisplayName: String? {
+        supersetGroup.flatMap(SupersetGroup.displayName(for:))
     }
 }
 
