@@ -392,48 +392,13 @@ public enum MovementPattern: String, DisplayableOption {
     case hinge
     case lunge
     case curl
-    case extension_   // "extension" is a Swift keyword; raw value stays "extension"
+    // "extension" is a Swift keyword; keep the stable raw value "extension"
+    // while exposing a non-keyword case name.
+    case extension_ = "extension"
     case carry
     case core
     case isolation
     case other
-
-    public init?(rawValue: String) {
-        switch rawValue {
-        case "horizontalPush": self = .horizontalPush
-        case "verticalPush": self = .verticalPush
-        case "horizontalPull": self = .horizontalPull
-        case "verticalPull": self = .verticalPull
-        case "squat": self = .squat
-        case "hinge": self = .hinge
-        case "lunge": self = .lunge
-        case "curl": self = .curl
-        case "extension": self = .extension_
-        case "carry": self = .carry
-        case "core": self = .core
-        case "isolation": self = .isolation
-        case "other": self = .other
-        default: return nil
-        }
-    }
-
-    public var rawValue: String {
-        switch self {
-        case .horizontalPush: return "horizontalPush"
-        case .verticalPush: return "verticalPush"
-        case .horizontalPull: return "horizontalPull"
-        case .verticalPull: return "verticalPull"
-        case .squat: return "squat"
-        case .hinge: return "hinge"
-        case .lunge: return "lunge"
-        case .curl: return "curl"
-        case .extension_: return "extension"
-        case .carry: return "carry"
-        case .core: return "core"
-        case .isolation: return "isolation"
-        case .other: return "other"
-        }
-    }
 
     public var displayName: String {
         switch self {
