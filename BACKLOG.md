@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F2 — Personal records (PR) detection & celebration** (`feat-f2-personal-records`)
+- [x] **F2 — Personal records (PR) detection & celebration** (`feat-f2-personal-records`)
   Detect when a saved set beats the prior best (load / reps / est-1RM) for that
   exercise; mark the set, show a badge in history/detail, light haptic on save.
   Deterministic only (StatsKit). Add `isPersonalRecord`-style derivation (no new
