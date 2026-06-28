@@ -14,8 +14,9 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F18 — Rest-day / training calendar heatmap** (`feat-f18-heatmap`)
-  GitHub-style heatmap of training days over recent weeks, shown in Insights.
+- [ ] **F20 — Per-exercise default rest override** (`feat-f20-per-exercise-rest`)
+  Optional per-exercise rest duration; the active workout reads it when present,
+  falling back to the global default.
 
 ## Now (next up)
 
@@ -46,11 +47,9 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F10 — Supersets** — optional supersetGroup field, set-entry tagging, badges in active workout & history. PR #11 (merged).
 - [x] **F11 — JSON import** — upsert-by-id restore of the JSON export (no deletes), fileImporter UI in Data management. PR #12 (merged).
 - [x] **F21 — Superset in export** — `superset_group` added to sets.csv + JSON (round-trips with F11 import). PR #13 (merged).
+- [x] **F18 — Training calendar heatmap** — GitHub-style training-days heatmap in Insights. PR #14 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
-- [ ] **F20 — Per-exercise default rest override**
-  Optional per-exercise rest duration; the active workout reads it when present,
-  falling back to the global default. (Follow-up split out of F19.)
 - [ ] **F22 — CSV import**
   Import the multi-CSV export back into the store (complements F11's JSON import).
