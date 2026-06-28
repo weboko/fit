@@ -7,6 +7,7 @@ enum AppSettingsKeys {
     static let lastBodyWeightKg = "fit.settings.lastBodyWeightKg"
     static let defaultExportIncludesHealth = "fit.settings.export.includeHealth"
     static let defaultExportIncludesJournal = "fit.settings.export.includeJournal"
+    static let defaultRestSeconds = "fit.settings.defaultRestSeconds"
 }
 
 /// App-level metadata used in exports and the Settings screen.
