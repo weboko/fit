@@ -9,6 +9,10 @@ enum AppSettingsKeys {
     static let defaultExportIncludesJournal = "fit.settings.export.includeJournal"
     static let defaultRestSeconds = "fit.settings.defaultRestSeconds"
     static let restAlertsEnabled = "fit.settings.restAlertsEnabled"
+    /// Plate calculator (F8): default bar weight in kg, and the comma-joined
+    /// list of enabled per-side plate sizes in kg.
+    static let barWeightKg = "fit.settings.barWeightKg"
+    static let enabledPlatesCSV = "fit.settings.enabledPlatesCSV"
 }
 
 /// App-level metadata used in exports and the Settings screen.
