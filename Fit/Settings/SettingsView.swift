@@ -31,6 +31,10 @@ struct SettingsView: View {
     /// `0`/unset is treated as the 90s fallback for display and selection (F5/F19).
     @AppStorage(AppSettingsKeys.defaultRestSeconds) private var defaultRestSeconds: Int = 0
 
+    /// Max heart rate (bpm) used for HR-zone boundaries at Health import (F13).
+    /// `0`/unset is treated as the 190 bpm fallback for display and computation.
+    @AppStorage(AppSettingsKeys.maxHeartRateBpm) private var maxHeartRateBpm: Int = 0
+
     /// Shown when the user enables alerts but notification permission is denied.
     @State private var restPermissionDenied = false
 
@@ -43,6 +47,15 @@ struct SettingsView: View {
         Binding(
             get: { defaultRestSeconds > 0 ? defaultRestSeconds : 90 },
             set: { defaultRestSeconds = $0 }
+        )
+    }
+
+    /// Stepper binding that maps `0`/unset onto the 190 bpm fallback so the
+    /// control always shows a concrete, valid max heart rate (F13).
+    private var maxHeartRateSelection: Binding<Int> {
+        Binding(
+            get: { maxHeartRateBpm > 0 ? maxHeartRateBpm : HeartRateZones.defaultMaxBpm },
+            set: { maxHeartRateBpm = $0 }
         )
     }
 
@@ -155,6 +168,14 @@ struct SettingsView: View {
         Section {
             // Provided by the HealthImport module: permission status + import buttons.
             HealthSettingsSection()
+            Stepper(value: maxHeartRateSelection, in: 120...220, step: 1) {
+                HStack {
+                    Text("Max heart rate")
+                    Spacer()
+                    Text("\(maxHeartRateSelection.wrappedValue) bpm")
+                        .foregroundStyle(.secondary)
+                }
+            }
             NavigationLink {
                 ImportHealthDataView()
             } label: {
@@ -163,7 +184,7 @@ struct SettingsView: View {
         } header: {
             Text("Apple Health")
         } footer: {
-            Text("Health access is read-only. Imported workouts, body weight and sleep are clearly marked and never overwrite anything you logged manually.")
+            Text("Health access is read-only. Imported workouts, body weight and sleep are clearly marked and never overwrite anything you logged manually. Max heart rate sets the heart-rate zone boundaries used when importing workouts.")
         }
     }
 

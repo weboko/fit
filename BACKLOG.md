@@ -24,7 +24,7 @@ item ships as its own pull request, based on the previous (merged) work on
 > PR is compiled by CI before merge.
 
 ## In progress
-- _(idle)_ — F26 (import integrity) is next up.
+- _(idle)_ — F27 (remove dead `suggestedWorkouts`) is next up (F26 also still open).
 
 ## Now (next up) — ROI-ranked, compiler-safe, additive
 - [ ] **F26 — Import integrity (stop blank-overwrite + honest errors)**
@@ -34,11 +34,6 @@ item ships as its own pull request, based on the previous (merged) work on
   when present. Also: `ImportError.unreadable` always says "Fit **JSON** export"
   even on the CSV path → generic wording; add a per-file short/long-row warning
   count. The only real data-loss risk in the app; small + contained.
-- [ ] **F13 — Heart-rate zones in export + summary**
-  Store optional per-zone seconds on `HealthWorkout` (CloudKit-safe defaults)
-  computed at Health import; fill the `heart_rate_summary.csv` zone_1..5 columns
-  (spec §12.9, currently always blank). Needs a max-HR setting (default 190) for
-  zone boundaries (% of max). Additive model fields → lightweight migration.
 - [ ] **F27 — Remove dead `HealthImportService.suggestedWorkouts(for:in:)`**
   Audit noise item: unused; `HealthLinkSection` re-implements the overlap filter
   inline. Delete (DRY). Trivial; can ride along with another PR.
@@ -60,6 +55,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F13 — Heart-rate zones in import + export** — added five optional `Int?` `zoneNSeconds` fields to `HealthWorkout` (CloudKit-safe, lightweight migration), computed at Health import by time-weighting HR samples (interval to next sample clamped to [0,60]s, credited to the current sample's zone by `bpm / maxHR`: Z1 .50–.60 … Z5 ≥.90, below .50 = no zone). New `maxHeartRateBpm` setting (default 190, 0/unset = 190) with a Settings → Apple Health stepper (120–220). `CSVExporter.heartRateSummary` now fills `zone_1..5_seconds` (spec §12.9) via `str(_:Int?)`. JSON export/import intentionally untouched (CSV-only feature). PR #__ (pending).
 - [x] **F25 — Populate `body_weight_kg_imported` in workouts.csv** — `CSVExporter.workouts` now fills the spec §12.4 column from the nearest same-day Health-imported (`DataSource.healthImport`) `BodyWeightEntry`, formatted like `body_weight_kg_manual`; empty when none (or when body-weight is excluded from the export). Pure exporter change, no model/migration. PR #__ (pending).
 - [x] **F24 — CI macOS compiler check** — `.github/workflows/ios-build.yml` builds the app on a `macos-15` runner (iOS Simulator, unsigned) on every PR + push to main. First run revealed `main` did not compile; fixed two errors in the same PR. PR #19 (merged).
 - [x] **F1 — Rest timer** — in-app between-sets countdown with ±15s/skip, wired into the active workout. PR #2 (merged).

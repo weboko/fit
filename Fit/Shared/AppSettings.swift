@@ -9,6 +9,9 @@ enum AppSettingsKeys {
     static let defaultExportIncludesJournal = "fit.settings.export.includeJournal"
     static let defaultRestSeconds = "fit.settings.defaultRestSeconds"
     static let restAlertsEnabled = "fit.settings.restAlertsEnabled"
+    /// Max heart rate in bpm used for heart-rate zone boundaries (F13). `0`/unset
+    /// is treated as the 190 bpm fallback for zone computation at Health import.
+    static let maxHeartRateBpm = "fit.settings.maxHeartRateBpm"
     /// Per-exercise rest override (F20): keyed by `exercise.id.uuidString`
     /// appended to this prefix. Stored in seconds; an absent/0 value means the
     /// exercise uses the global default rest length.
@@ -23,6 +26,13 @@ enum AppSettingsKeys {
     /// First-run onboarding (F15): set to `true` once the user has completed or
     /// skipped the onboarding flow so it is only ever shown on first launch.
     static let hasOnboarded = "fit.settings.hasOnboarded"
+}
+
+/// Heart-rate zone defaults shared by the Settings UI and the import service so
+/// the fallback max HR is defined once (F13).
+enum HeartRateZones {
+    /// Fallback max heart rate (bpm) when the setting is unset or stored as `0`.
+    static let defaultMaxBpm = 190
 }
 
 /// App-level metadata used in exports and the Settings screen.

@@ -238,8 +238,9 @@ enum CSVExporter {
         return document(header: header, rows: rows)
     }
 
-    /// heart_rate_summary.csv — zone_*_seconds intentionally left blank (optional
-    /// per spec; the data model does not store per-zone time).
+    /// heart_rate_summary.csv — zone_*_seconds are filled from the per-zone time
+    /// computed at Health import (F13); blank for records imported before that
+    /// feature, where the zone fields are still nil.
     static func heartRateSummary(_ data: ExportDataSet) -> String {
         // Spec §12.9 order: leading workout_id (linked session) then HR summary.
         let header = [
@@ -256,7 +257,11 @@ enum CSVExporter {
                 str(h.minHeartRateBpm),
                 str(h.maxHeartRateBpm),
                 str(h.heartRateSampleCount),
-                "", "", "", "", ""
+                str(h.zone1Seconds),
+                str(h.zone2Seconds),
+                str(h.zone3Seconds),
+                str(h.zone4Seconds),
+                str(h.zone5Seconds)
             ]
         }
         return document(header: header, rows: rows)
