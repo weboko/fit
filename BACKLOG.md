@@ -14,11 +14,10 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-_(idle — next item picked by the autonomous loop / cron heartbeat)_
+- [ ] **F22 — CSV import** (`feat-f22-csv-import`)
+  Import the multi-CSV export back into the store (complements F11's JSON import).
 
 ## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
-- [ ] **F22 — CSV import**
-  Import the multi-CSV export back into the store (complements F11's JSON import).
 - [ ] **F13 — Heart-rate zones in export + summary**
   Store per-zone seconds on HealthWorkout (optional fields) computed at Health
   import; fill the heart_rate_summary.csv zone columns.
