@@ -160,7 +160,8 @@ struct WorkoutDetailView: View {
     }
 
     private func setRow(_ set: WorkoutSet) -> some View {
-        HStack(spacing: Theme.Spacing.m) {
+        let prKinds = PersonalRecords.kinds(for: set, in: set.exercise?.sets ?? [])
+        return HStack(spacing: Theme.Spacing.m) {
             if set.isWarmup {
                 Image(systemName: "flame")
                     .foregroundStyle(.orange)
@@ -168,6 +169,7 @@ struct WorkoutDetailView: View {
             }
             Text(Format.setSummary(set))
                 .font(.body.monospacedDigit())
+            PRBadge(kinds: prKinds)
             Spacer(minLength: Theme.Spacing.s)
             if let effort = set.effort {
                 Text(EffortScale.shortLabel(for: effort))

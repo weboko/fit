@@ -38,6 +38,7 @@ struct ExerciseDetailView: View {
                 metadataCard
                 if !exercise.aliasNames.isEmpty { aliasesCard }
                 statsCard
+                personalRecordsCard
                 chartCard
                 setsCard
             }
@@ -172,6 +173,59 @@ struct ExerciseDetailView: View {
         }
     }
 
+    // MARK: - Personal records
+
+    @ViewBuilder
+    private var personalRecordsCard: some View {
+        let records = PersonalRecords.current(for: exercise)
+        SectionCard("Personal records", systemImage: "trophy.fill") {
+            if records.isEmpty {
+                Text("No personal records yet.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                VStack(spacing: Theme.Spacing.s) {
+                    ForEach(PRKind.allCases) { kind in
+                        if let set = records[kind] {
+                            personalRecordRow(kind, set: set)
+                            if kind != lastRecordedKind(in: records) { Divider() }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func personalRecordRow(_ kind: PRKind, set: WorkoutSet) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.m) {
+            Label(kind.displayName, systemImage: kind.systemImage)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: Theme.Spacing.s)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(recordValueText(kind, set: set))
+                    .font(.body.weight(.semibold))
+                Text(set.timestamp.formatted(.dateTime.month().day().year()))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func recordValueText(_ kind: PRKind, set: WorkoutSet) -> String {
+        switch kind {
+        case .load, .reps:
+            return Format.setSummary(set)
+        case .estimatedOneRepMax:
+            return Format.weight(set.estimatedOneRepMaxKg)
+        }
+    }
+
+    private func lastRecordedKind(in records: [PRKind: WorkoutSet]) -> PRKind? {
+        PRKind.allCases.last { records[$0] != nil }
+    }
+
     private var chartCard: some View {
         SectionCard("Progress", systemImage: "chart.xyaxis.line") {
             Picker("Metric", selection: $chartMetric) {
@@ -217,10 +271,14 @@ struct ExerciseDetailView: View {
     }
 
     private func setRow(_ set: WorkoutSet) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        let prKinds = PersonalRecords.kinds(for: set, in: exercise.sets ?? [])
+        return HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(Format.setSummary(set))
-                    .font(.body.weight(.medium))
+                HStack(spacing: Theme.Spacing.s) {
+                    Text(Format.setSummary(set))
+                        .font(.body.weight(.medium))
+                    PRBadge(kinds: prKinds)
+                }
                 HStack(spacing: Theme.Spacing.s) {
                     Text(set.timestamp.formatted(.dateTime.month().day().year()))
                         .font(.caption)

@@ -19,6 +19,14 @@ struct ActiveWorkoutView: View {
     /// Tracks the set count so we can detect a freshly-saved set.
     @State private var savedSetCount = 0
 
+    /// Drives a brief, auto-dismissing celebration banner when the newest set
+    /// sets a personal record. Empty means no banner is shown.
+    @State private var prCelebrationKinds: Set<PRKind> = []
+    /// Bumped each time a PR is detected so `.sensoryFeedback` fires once.
+    @State private var prHapticTrigger = 0
+    /// Identifies the current banner so a stale auto-dismiss cannot hide a newer one.
+    @State private var prBannerToken = UUID()
+
     // Sheet routing
     @State private var pickerMode: PickerMode?
     @State private var setEntryTarget: Exercise?
@@ -34,6 +42,10 @@ struct ActiveWorkoutView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.l) {
+                if !prCelebrationKinds.isEmpty {
+                    prBanner
+                }
+
                 timerHeader
 
                 if session.exercisesInOrder.isEmpty {
@@ -87,9 +99,11 @@ struct ActiveWorkoutView: View {
             // A newly-saved set starts the rest countdown for the default length.
             if newCount > savedSetCount {
                 restTimer.start(RestTimerDefaults.defaultRestSeconds)
+                celebrateIfPersonalRecord()
             }
             savedSetCount = newCount
         }
+        .sensoryFeedback(.success, trigger: prHapticTrigger)
         .sheet(item: $pickerMode) { _ in
             ExercisePickerView { exercise in
                 // Open set entry immediately after choosing.
@@ -115,6 +129,43 @@ struct ActiveWorkoutView: View {
         } message: {
             Text("This permanently deletes the in-progress workout and its sets.")
         }
+    }
+
+    // MARK: - PR celebration banner
+
+    private var prBanner: some View {
+        HStack(spacing: Theme.Spacing.m) {
+            Image(systemName: "trophy.fill")
+                .font(.title3)
+                .foregroundStyle(.yellow)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("New personal record!")
+                    .font(.subheadline.weight(.bold))
+                if !prCelebrationKinds.isEmpty {
+                    Text(prCelebrationSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: Theme.Spacing.s)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Theme.Spacing.m)
+        .background(Color.yellow.opacity(0.15))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Size.cornerRadius, style: .continuous)
+                .strokeBorder(Color.yellow.opacity(0.5), lineWidth: 1)
+        )
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .accessibilityElement(children: .combine)
+    }
+
+    private var prCelebrationSubtitle: String {
+        PRKind.allCases
+            .filter { prCelebrationKinds.contains($0) }
+            .map(\.displayName)
+            .joined(separator: " · ")
     }
 
     // MARK: - Header
@@ -251,6 +302,38 @@ struct ActiveWorkoutView: View {
     private func discard() {
         context.delete(session)
         try? context.save()
+    }
+
+    // MARK: - PR detection
+
+    /// Checks whether the most recently saved set holds any personal record and,
+    /// if so, fires a success haptic and shows a brief, auto-dismissing banner.
+    private func celebrateIfPersonalRecord() {
+        guard let newest = newestSet,
+              let exercise = newest.exercise else { return }
+        let kinds = PersonalRecords.kinds(for: newest, in: exercise.sets ?? [])
+        guard !kinds.isEmpty else { return }
+
+        prHapticTrigger += 1
+        let token = UUID()
+        prBannerToken = token
+        withAnimation(.spring(duration: 0.3)) {
+            prCelebrationKinds = kinds
+        }
+
+        // Auto-dismiss after a few seconds, unless a newer banner supersedes it.
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))
+            guard prBannerToken == token else { return }
+            withAnimation(.easeOut(duration: 0.25)) {
+                prCelebrationKinds = []
+            }
+        }
+    }
+
+    /// The latest set in the session (highest setIndex, then timestamp).
+    private var newestSet: WorkoutSet? {
+        session.orderedSets.last
     }
 }
 
