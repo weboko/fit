@@ -243,16 +243,6 @@ final class HealthImportService: ObservableObject {
 
     // MARK: Linking
 
-    /// Apple Health workouts already imported that overlap `session`'s window and
-    /// are not linked to a different session. Sorted by start time.
-    func suggestedWorkouts(for session: WorkoutSession, in context: ModelContext) -> [HealthWorkout] {
-        let all = (try? context.fetch(FetchDescriptor<HealthWorkout>())) ?? []
-        return all
-            .filter { $0.overlaps(session: session) }
-            .filter { $0.linkedSession == nil || $0.linkedSession?.id == session.id }
-            .sorted { $0.startTime < $1.startTime }
-    }
-
     /// Links `hw` to `session`, ensuring no duplicate links: any health workout
     /// previously linked to this session is detached first, and `hw` is detached
     /// from any other session it might have been linked to.
