@@ -23,6 +23,15 @@ final class HealthWorkout {
     var maxHeartRateBpm: Double?
     var heartRateSampleCount: Int?
 
+    /// Time-in-zone seconds (F13), computed at Health import from the workout's HR
+    /// samples (% of `maxHeartRateBpm` setting). Optional ⇒ CloudKit-safe and nil
+    /// means "not computed" (e.g. records imported before this feature).
+    var zone1Seconds: Int?
+    var zone2Seconds: Int?
+    var zone3Seconds: Int?
+    var zone4Seconds: Int?
+    var zone5Seconds: Int?
+
     var sourceName: String?
     var sourceDevice: String?
 

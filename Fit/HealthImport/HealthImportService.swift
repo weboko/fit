@@ -138,6 +138,11 @@ final class HealthImportService: ObservableObject {
                     hw.minHeartRateBpm = summary.min
                     hw.maxHeartRateBpm = summary.max
                     hw.heartRateSampleCount = summary.count
+                    hw.zone1Seconds = summary.zone1
+                    hw.zone2Seconds = summary.zone2
+                    hw.zone3Seconds = summary.zone3
+                    hw.zone4Seconds = summary.zone4
+                    hw.zone5Seconds = summary.zone5
                 }
 
                 context.insert(hw)
@@ -353,12 +358,18 @@ final class HealthImportService: ObservableObject {
         }
     }
 
-    /// Aggregated heart-rate stats over a workout's time window.
+    /// Aggregated heart-rate stats over a workout's time window, including
+    /// time-in-zone seconds (F13) computed from the per-sample bpm.
     private struct HeartRateSummary {
         let avg: Double
         let min: Double
         let max: Double
         let count: Int
+        let zone1: Int
+        let zone2: Int
+        let zone3: Int
+        let zone4: Int
+        let zone5: Int
     }
 
     private func heartRateSummary(for workout: HKWorkout) async throws -> HeartRateSummary? {
@@ -389,12 +400,60 @@ final class HealthImportService: ObservableObject {
         guard !samples.isEmpty else { return nil }
         let values = samples.map { $0.quantity.doubleValue(for: unit) }
         let sum = values.reduce(0, +)
+        let zones = Self.zoneSeconds(for: samples, unit: unit, maxHeartRate: maxHeartRateBpm)
         return HeartRateSummary(
             avg: sum / Double(values.count),
             min: values.min() ?? 0,
             max: values.max() ?? 0,
-            count: values.count
+            count: values.count,
+            zone1: zones[0],
+            zone2: zones[1],
+            zone3: zones[2],
+            zone4: zones[3],
+            zone5: zones[4]
         )
+    }
+
+    /// Configured max heart rate (bpm) for zone boundaries (F13), read from the
+    /// shared settings. `0`/unset falls back to `HeartRateZones.defaultMaxBpm`.
+    private var maxHeartRateBpm: Double {
+        let stored = UserDefaults.standard.integer(forKey: AppSettingsKeys.maxHeartRateBpm)
+        return Double(stored > 0 ? stored : HeartRateZones.defaultMaxBpm)
+    }
+
+    /// Time-weighted seconds spent in each of the five HR zones (F13).
+    ///
+    /// Samples are sorted by `startDate` ascending; for each consecutive pair the
+    /// interval to the next sample (clamped to `[0, 60]`s to ignore dropouts) is
+    /// credited to the zone of the *current* sample's bpm. The final sample adds
+    /// no interval. Zones by `pct = bpm / maxHeartRate`: Z1 0.50–0.60, Z2 0.60–0.70,
+    /// Z3 0.70–0.80, Z4 0.80–0.90, Z5 ≥0.90; `pct < 0.50` counts toward no zone.
+    /// Returns rounded seconds as `[z1, z2, z3, z4, z5]`.
+    private static func zoneSeconds(
+        for samples: [HKQuantitySample],
+        unit: HKUnit,
+        maxHeartRate: Double
+    ) -> [Int] {
+        guard maxHeartRate > 0 else { return [0, 0, 0, 0, 0] }
+        let sorted = samples.sorted { $0.startDate < $1.startDate }
+        var accum = [Double](repeating: 0, count: 5)
+        for index in sorted.indices.dropLast() {
+            let current = sorted[index]
+            let next = sorted[index + 1]
+            let interval = next.startDate.timeIntervalSince(current.startDate)
+            let clamped = min(max(interval, 0), 60)
+            let bpm = current.quantity.doubleValue(for: unit)
+            let pct = bpm / maxHeartRate
+            let zone: Int
+            if pct >= 0.90 { zone = 4 }
+            else if pct >= 0.80 { zone = 3 }
+            else if pct >= 0.70 { zone = 2 }
+            else if pct >= 0.60 { zone = 1 }
+            else if pct >= 0.50 { zone = 0 }
+            else { continue } // below Z1 floor: no zone
+            accum[zone] += clamped
+        }
+        return accum.map { Int($0.rounded()) }
     }
 
     // MARK: - Workout energy helpers (handle pre/post iOS 18 statistics API)
