@@ -59,9 +59,11 @@ struct BackfillWorkoutView: View {
                     }
                 }
 
-                Section("Approximate?") {
+                Section {
                     TextField("e.g. \"weights approximate\"", text: $approximateNote, axis: .vertical)
                         .lineLimit(1...3)
+                } header: {
+                    Text("Approximate?")
                 } footer: {
                     Text("Backfilled workouts are tagged so you can tell them from live logs.")
                 }

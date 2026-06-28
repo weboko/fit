@@ -39,6 +39,11 @@ enum PersistenceController {
     }
 
     /// Builds an in-memory container for previews and tests.
+    ///
+    /// `@MainActor` because it touches `container.mainContext` (which is
+    /// main-actor-isolated) to seed; preview containers are always built on the
+    /// main actor.
+    @MainActor
     static func makePreviewContainer(seeded: Bool = true) -> ModelContainer {
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: schema, configurations: [config])
