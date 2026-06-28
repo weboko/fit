@@ -24,16 +24,9 @@ item ships as its own pull request, based on the previous (merged) work on
 > PR is compiled by CI before merge.
 
 ## In progress
-- _(idle)_ — F26 (import integrity) is next up.
+- _(idle)_ — F13 (heart-rate zones in export + summary) is next up.
 
 ## Now (next up) — ROI-ranked, compiler-safe, additive
-- [ ] **F26 — Import integrity (stop blank-overwrite + honest errors)**
-  Audit deviation #1/#3. The "upsert, never deletes" import path actually blanks
-  a populated `title`/`notes` when a re-imported record omits that optional
-  field (`DataImportService.swift`, `CSVImportService.swift`). Fix: only assign
-  when present. Also: `ImportError.unreadable` always says "Fit **JSON** export"
-  even on the CSV path → generic wording; add a per-file short/long-row warning
-  count. The only real data-loss risk in the app; small + contained.
 - [ ] **F13 — Heart-rate zones in export + summary**
   Store optional per-zone seconds on `HealthWorkout` (CloudKit-safe defaults)
   computed at Health import; fill the `heart_rate_summary.csv` zone_1..5 columns
@@ -60,6 +53,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F26 — Import integrity (stop blank-overwrite + honest errors)** — fixed the "upsert, never deletes" data-loss bug: the JSON path (`DataImportService.swift`) no longer blanks a populated `notes`/`title` via `?? ""` and the CSV path (`CSVImportService.swift`) now uses the empty-aware `string(_:_:)` helper so a present-but-blank cell preserves the existing value (insert still gets the model's `""` default). `ImportError.unreadable` wording is now format-agnostic (shared by JSON + CSV). Added a per-file malformed-row warning (field count != header count) via `CSVParser.parse`, without changing `parseKeyed`'s contract. PR #__ (pending).
 - [x] **F25 — Populate `body_weight_kg_imported` in workouts.csv** — `CSVExporter.workouts` now fills the spec §12.4 column from the nearest same-day Health-imported (`DataSource.healthImport`) `BodyWeightEntry`, formatted like `body_weight_kg_manual`; empty when none (or when body-weight is excluded from the export). Pure exporter change, no model/migration. PR #__ (pending).
 - [x] **F24 — CI macOS compiler check** — `.github/workflows/ios-build.yml` builds the app on a `macos-15` runner (iOS Simulator, unsigned) on every PR + push to main. First run revealed `main` did not compile; fixed two errors in the same PR. PR #19 (merged).
 - [x] **F1 — Rest timer** — in-app between-sets countdown with ±15s/skip, wired into the active workout. PR #2 (merged).
