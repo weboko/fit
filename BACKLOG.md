@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F11 — JSON import (restore from a prior export)** (`feat-f11-import`)
+- [x] **F11 — JSON import (restore from a prior export)** (`feat-f11-import`)
   Round-trip the JSON export back into the store (upsert by id), enabling
   backup/restore and migration. Scope: JSON only; CSV import split to F22.
 
