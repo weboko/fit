@@ -1,0 +1,56 @@
+name: iOS Build
+
+# Compiles the Fit app on a GitHub-hosted macOS runner for the iOS Simulator
+# with code signing disabled. This is the project's only real compiler check —
+# the app is otherwise authored/reviewed without a local Xcode toolchain — so it
+# guards every PR against compile regressions. It does not sign, archive, or run
+# on a device; it only proves the code builds.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (iOS Simulator, unsigned)
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: |
+          echo "Available Xcodes:"; ls /Applications | grep -i xcode || true
+          xcodebuild -version
+          swift --version
+
+      - name: List schemes
+        run: xcodebuild -project Fit.xcodeproj -list
+
+      - name: Build for iOS Simulator (no signing)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Fit.xcodeproj \
+            -scheme Fit \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -skipPackagePluginValidation \
+            -disableAutomaticPackageResolution \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO \
+            build

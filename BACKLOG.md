@@ -14,25 +14,32 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-_(idle — next item picked by the autonomous loop / cron heartbeat)_
+- [ ] **F24 — CI: real macOS compiler check** (PR open)
+  GitHub Actions workflow (`.github/workflows/ios-build.yml`) that builds the
+  app on a `macos-15` runner for the iOS Simulator with signing disabled.
+  **Strategic:** this is the project's first true compile gate. Until now every
+  PR was "verified by review, not compiled"; once this is green on `main`, every
+  future PR is actually compiled by the runner. This *unblocks* the "needs a real
+  Xcode build" tier below — those items become safe to merge once CI is green on
+  their branch.
 
-## Now (next up) — compiler-safe, additive (safe for the blind auto-merge loop)
+## Now (next up) — compiler-safe, additive
 - [ ] **F13 — Heart-rate zones in export + summary**
   Store per-zone seconds on HealthWorkout (optional fields) computed at Health
   import; fill the heart_rate_summary.csv zone columns.
 - [ ] **F23 — Exercise-detail accessibility chart summaries**
   Extend F17's chart-summary pattern to the exercise-detail charts (follow-up).
 
-## Later — NEEDS A REAL XCODE BUILD before merge (new target / large surface)
-> These touch the Xcode project structure or a huge surface, which can't be
-> compiler-verified in the headless loop. Do them on a Mac with a build, or have
-> the loop open the PR as a DRAFT for a human build check rather than auto-merge.
+## Later — larger surface (now gated by F24 CI build instead of blind-merge fear)
+> Once F24 CI is green on `main`, these are no longer "blind"; the runner
+> compiles each PR. Still land them one at a time and watch the CI result before
+> merging.
 - [ ] **F16 — Unit tests (StatsKit, export/import round-trip, weight conversion)**
-  Needs a new XCTest target (pbxproj change) — build required.
+  Needs a new XCTest target (pbxproj change) — CI will now compile/run it.
 - [ ] **F14 — Home-screen widget (last workout / streak)**
-  Needs a new WidgetKit app-extension target (pbxproj change) — build required.
+  Needs a new WidgetKit app-extension target (pbxproj change) — CI compiles it.
 - [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
-  Large cross-file string externalization + String Catalog — build recommended.
+  Large cross-file string externalization + String Catalog.
 
 ## Done
 <!-- merged items move here with PR links -->
