@@ -8,6 +8,7 @@ enum AppSettingsKeys {
     static let defaultExportIncludesHealth = "fit.settings.export.includeHealth"
     static let defaultExportIncludesJournal = "fit.settings.export.includeJournal"
     static let defaultRestSeconds = "fit.settings.defaultRestSeconds"
+    static let restAlertsEnabled = "fit.settings.restAlertsEnabled"
 }
 
 /// App-level metadata used in exports and the Settings screen.

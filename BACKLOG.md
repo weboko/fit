@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F5 — Rest-timer notifications + haptics polish** (`feat-f5-rest-alerts`)
+- [x] **F5 — Rest-timer notifications + haptics polish** (`feat-f5-rest-alerts`)
   Local notification when the rest timer ends (with permission), haptic on set
   save and PR. Also folds in F19: a Settings "Rest" section (alerts toggle +
   default rest duration).

@@ -24,19 +24,39 @@ final class RestTimerModel {
         return min(1, max(0, (duration - remaining) / duration))
     }
 
+    /// Additive observation hooks (F5). When set, these let an owning view mirror
+    /// the rest lifecycle into out-of-app effects (e.g. a local notification)
+    /// without this model knowing anything about notifications. All default to
+    /// `nil`, so the in-app F1 behaviour is unchanged when they are not wired.
+    ///
+    /// - `onRestStarted`: a fresh countdown began, with its starting seconds.
+    /// - `onRestChanged`: the remaining time was adjusted (±15s), with the new
+    ///   remaining seconds, while the countdown is still running.
+    /// - `onRestEnded`: the countdown finished or was stopped/skipped.
+    var onRestStarted: ((TimeInterval) -> Void)?
+    var onRestChanged: ((TimeInterval) -> Void)?
+    var onRestEnded: (() -> Void)?
+
     /// Begins (or restarts) a rest countdown for `seconds`.
     func start(_ seconds: TimeInterval) {
         let clamped = max(0, seconds)
         duration = clamped
         remaining = clamped
         isRunning = clamped > 0
+        if isRunning {
+            onRestStarted?(clamped)
+        } else {
+            onRestEnded?()
+        }
     }
 
     /// Stops the countdown and hides the bar.
     func stop() {
+        let wasRunning = isRunning
         isRunning = false
         remaining = 0
         duration = 0
+        if wasRunning { onRestEnded?() }
     }
 
     /// Skips the remaining rest. Equivalent to `stop()` for an in-app timer.
@@ -51,7 +71,11 @@ final class RestTimerModel {
         let newRemaining = max(0, remaining + delta)
         remaining = newRemaining
         if newRemaining > duration { duration = newRemaining }
-        if newRemaining == 0 { stop() }
+        if newRemaining == 0 {
+            stop()
+        } else {
+            onRestChanged?(newRemaining)
+        }
     }
 
     /// Advances the countdown by `seconds` (called once per tick by the view).
