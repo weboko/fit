@@ -74,6 +74,7 @@ struct InsightsView: View {
                 } else {
                     totalsCard
                     frequencyCard
+                    CalendarHeatmapView()
                     volumeByMuscleCard
                     setsByMuscleCard
                 }
