@@ -14,7 +14,7 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [ ] **F7 — Volume & frequency analytics (per muscle group, deterministic)** (`feat-f7-insights`)
+- [x] **F7 — Volume & frequency analytics (per muscle group, deterministic)** (`feat-f7-insights`)
   History "Insights" tab/section: sets & volume per muscle group per week,
   workout frequency, using StatsKit. Charts only, no recommendations.
 
