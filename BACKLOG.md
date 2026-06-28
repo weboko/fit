@@ -14,14 +14,13 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F1 — Rest timer** (`feat-f1-rest-timer`)
-
-## Now (next up)
-- [ ] **F2 — Personal records (PR) detection & celebration**
+- [ ] **F2 — Personal records (PR) detection & celebration** (`feat-f2-personal-records`)
   Detect when a saved set beats the prior best (load / reps / est-1RM) for that
   exercise; mark the set, show a badge in history/detail, light haptic on save.
   Deterministic only (StatsKit). Add `isPersonalRecord`-style derivation (no new
   required model fields; compute against history).
+
+## Now (next up)
 - [ ] **F3 — Goal trackers screen (Bench 100 kg, Pull-ups)**
   A dedicated screen surfacing goal exercises: best set, recent working weights,
   est-1RM trend, distance to target (configurable target kg / reps). No coaching.
@@ -66,3 +65,10 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F1 — Rest timer** — in-app between-sets countdown with ±15s/skip, wired into the active workout. PR #2 (merged).
+
+## New ideas (groomed in)
+- [ ] **F19 — Rest-timer Settings control + per-exercise default rest**
+  Surface the default rest seconds in Settings and allow an optional per-exercise
+  override; the active workout reads the per-exercise value when present. (Builds
+  on F1; complements F5 notifications.)
