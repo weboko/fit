@@ -14,14 +14,11 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F6 — Body-weight tracking screen + trend chart** (`feat-f6-bodyweight`)
-  Manual body-weight entry UI + chart over time (BodyWeightEntry already exists),
-  surfaced in Settings/History; feeds bodyweight-mode set defaults.
-
-## Now (next up)
-- [ ] **F7 — Volume & frequency analytics (per muscle group, deterministic)**
+- [ ] **F7 — Volume & frequency analytics (per muscle group, deterministic)** (`feat-f7-insights`)
   History "Insights" tab/section: sets & volume per muscle group per week,
   workout frequency, using StatsKit. Charts only, no recommendations.
+
+## Now (next up)
 - [ ] **F8 — Plate calculator**
   Given a target barbell load and a bar weight + available plates, show the plate
   breakdown per side. Pure utility, reachable from set entry.
@@ -54,6 +51,7 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F3 — Goal trackers** — per-goal cards (best/target/distance, trend), UserDefaults targets, reachable from Exercises + Today. PR #4 (merged).
 - [x] **F4 — Workout templates** — WorkoutTemplate/TemplateItem models, manage/edit, save-from-workout, start-from-template with pre-filled planned set entry. PR #5 (merged).
 - [x] **F5 — Rest alerts + haptics** — local rest-end notification (opt-in), save haptic, Settings "Rest" section (alerts + default duration; closes F19). PR #6 (merged).
+- [x] **F6 — Body-weight tracking** — trend chart + manual entry editor, Apple Health badge, feeds bodyweight set default. Settings → Tracking. PR #7 (merged).
 
 ## New ideas (groomed in)
 - [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
