@@ -6,16 +6,38 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		FE200000000000000000CB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE10000000000000000000A6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE10000000000000000000A5;
+			remoteInfo = Fit;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FE10000000000000000000A2 /* Fit */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Fit;
 			sourceTree = "<group>";
 		};
+		FE200000000000000000C1 /* FitTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FitTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		FE10000000000000000000A8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE200000000000000000C4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -29,6 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				FE10000000000000000000A2 /* Fit */,
+				FE200000000000000000C1 /* FitTests */,
 				FE10000000000000000000A3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -37,6 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				FE10000000000000000000A4 /* Fit.app */,
+				FE200000000000000000C6 /* FitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -64,6 +88,27 @@
 			productReference = FE10000000000000000000A4 /* Fit.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FE200000000000000000C2 /* FitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE200000000000000000C7 /* Build configuration list for PBXNativeTarget "FitTests" */;
+			buildPhases = (
+				FE200000000000000000C3 /* Sources */,
+				FE200000000000000000C4 /* Frameworks */,
+				FE200000000000000000C5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FE200000000000000000CA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				FE200000000000000000C1 /* FitTests */,
+			);
+			name = FitTests;
+			productName = FitTests;
+			productReference = FE200000000000000000C6 /* FitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -76,6 +121,10 @@
 				TargetAttributes = {
 					FE10000000000000000000A5 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					FE200000000000000000C2 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = FE10000000000000000000A5;
 					};
 				};
 			};
@@ -93,12 +142,20 @@
 			projectRoot = "";
 			targets = (
 				FE10000000000000000000A5 /* Fit */,
+				FE200000000000000000C2 /* FitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		FE10000000000000000000A9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE200000000000000000C5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -115,7 +172,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FE200000000000000000C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FE200000000000000000CA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FE10000000000000000000A5 /* Fit */;
+			targetProxy = FE200000000000000000CB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		FE10000000000000000000B3 /* Debug */ = {
@@ -303,6 +375,42 @@
 			};
 			name = Release;
 		};
+		FE200000000000000000C8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.weboko.fit.FitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Fit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Fit";
+			};
+			name = Debug;
+		};
+		FE200000000000000000C9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.weboko.fit.FitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Fit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Fit";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -320,6 +428,15 @@
 			buildConfigurations = (
 				FE10000000000000000000B5 /* Debug */,
 				FE10000000000000000000B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE200000000000000000C7 /* Build configuration list for PBXNativeTarget "FitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE200000000000000000C8 /* Debug */,
+				FE200000000000000000C9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

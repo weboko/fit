@@ -24,10 +24,10 @@ item ships as its own pull request, based on the previous (merged) work on
 > PR is compiled by CI before merge.
 
 ## In progress
-- _(idle)_ — the compiler-safe additive queue is drained. Next focus is the
-  **"Later"** tier, starting with **F16 (unit tests)**: it needs a new XCTest
-  target (pbxproj change) + a CI `test` job, so it deserves its own focused
-  iteration with a close CI watch.
+- _(idle)_ — F16 (unit tests) has shipped. Remaining "Later" tier: **F14**
+  (home-screen widget — new WidgetKit extension target) and **F12**
+  (localization). Both still need their own focused iteration with a close CI
+  watch.
 
 ## Now (next up) — ROI-ranked
 - _(empty — every compiler-safe additive item from the audit has shipped; the
@@ -37,10 +37,6 @@ item ships as its own pull request, based on the previous (merged) work on
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
 > the run. The pbxproj risk is real (new targets in a file-system-synchronized
 > Xcode-16 project) so verify CI stays green.
-- [ ] **F16 — Unit tests (StatsKit, PersonalRecords, CSV parser, export→import round-trip)**
-  Audit idea #3 — highest leverage given the "never compiled locally" history;
-  would have caught the import blank-overwrite (F26). Needs a new XCTest target
-  (pbxproj change); add a `test` job to the CI workflow to actually run it.
 - [ ] **F14 — Home-screen widget (last workout / streak)**
   Needs a new WidgetKit app-extension target (pbxproj change) — CI compiles it.
 - [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
@@ -48,6 +44,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F16 — Unit tests (StatsKit, PersonalRecords, CSV parser, weight conversion, export→import round-trip)** — added a `FitTests` XCTest unit-test target to the Xcode-16 file-system-synchronized project (pbxproj: new sync root group, native target, container-item-proxy + target-dependency, two `BUNDLE_LOADER`/`TEST_HOST` build configs and their config list; products stay synthesized — no PBXFileReference), enabled it in the shared scheme's `<Testables>`, and wrote five hermetic, deterministic test files (in-memory SwiftData only, no Health/network/UserDefaults): StatsKit volume/best/Epley-1RM, record-at-the-time PR detection (first set is a PR, strictly-greater later set is a PR, warm-ups skipped), RFC-4180 CSV parse/parseKeyed (quoted commas, doubled quotes, CRLF/LF, no phantom trailing row, header mapping), kg↔lb conversion round-trip, and a CSVExporter→CSVParser text round-trip. Added a second CI `test` job (`macos-15`, `xcodebuild test` on the iPhone 16 simulator) alongside the existing build job. PR #__ (pending). Remaining "Later" tier: F14 (widget), F12 (localization).
 - [x] **F23 — Data-rich accessibility summaries for `MetricLineChart`** — added an optional `accessibilitySummary: String?` parameter (default `nil`) to `MetricLineChart.init`; when supplied it becomes the chart's `.accessibilityLabel` (still one combined element via `.accessibilityElement(children: .ignore)`), otherwise the generic "Trend chart" label + the in-component fallback summary are kept, so every existing caller stays source-compatible. All three call sites now pass a metric-aware one-liner (count of sessions/entries, value range, latest value, trend up/down/flat, formatted like the chart's own labels with the unit symbol): exercise-detail (Best load / Est. 1RM, required target), body-weight trend, and goal-tracker trend (Est. 1RM / Best reps). Empty/single-point cases handled ("no data yet" / single value). No model/schema/export changes, no new deps. PR #24 (pending).
 - [x] **F27 — Remove dead `suggestedWorkouts`** — deleted the unused `HealthImportService.suggestedWorkouts(for:in:)`; `HealthLinkSection` already finds overlaps via `@Query` + `hw.overlaps(session:)` (DRY). PR #23 (merged).
 - [x] **F13 — Heart-rate zones in import + export** — added five optional `Int?` `zoneNSeconds` fields to `HealthWorkout` (CloudKit-safe, lightweight migration), computed at Health import by time-weighting HR samples (interval to next sample clamped to [0,60]s, credited to the current sample's zone by `bpm / maxHR`: Z1 .50–.60 … Z5 ≥.90, below .50 = no zone). New `maxHeartRateBpm` setting (default 190, 0/unset = 190) with a Settings → Apple Health stepper (120–220). `CSVExporter.heartRateSummary` now fills `zone_1..5_seconds` (spec §12.9) via `str(_:Int?)`. JSON export/import intentionally untouched (CSV-only feature). PR #22 (pending).
