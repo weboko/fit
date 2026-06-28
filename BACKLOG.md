@@ -14,17 +14,11 @@ item ships as its own pull request, based on the previous (merged) work on
 ---
 
 ## In progress
-- [x] **F5 — Rest-timer notifications + haptics polish** (`feat-f5-rest-alerts`)
-  Local notification when the rest timer ends (with permission), haptic on set
-  save and PR. Also folds in F19: a Settings "Rest" section (alerts toggle +
-  default rest duration).
-
-## Now (next up)
-
-## Next
-- [ ] **F6 — Body-weight tracking screen + trend chart**
+- [ ] **F6 — Body-weight tracking screen + trend chart** (`feat-f6-bodyweight`)
   Manual body-weight entry UI + chart over time (BodyWeightEntry already exists),
   surfaced in Settings/History; feeds bodyweight-mode set defaults.
+
+## Now (next up)
 - [ ] **F7 — Volume & frequency analytics (per muscle group, deterministic)**
   History "Insights" tab/section: sets & volume per muscle group per week,
   workout frequency, using StatsKit. Charts only, no recommendations.
@@ -59,9 +53,10 @@ item ships as its own pull request, based on the previous (merged) work on
 - [x] **F2 — Personal records** — deterministic PR detection (load/reps/est-1RM), badges in history & exercise detail, on-save haptic + banner. PR #3 (merged).
 - [x] **F3 — Goal trackers** — per-goal cards (best/target/distance, trend), UserDefaults targets, reachable from Exercises + Today. PR #4 (merged).
 - [x] **F4 — Workout templates** — WorkoutTemplate/TemplateItem models, manage/edit, save-from-workout, start-from-template with pre-filled planned set entry. PR #5 (merged).
+- [x] **F5 — Rest alerts + haptics** — local rest-end notification (opt-in), save haptic, Settings "Rest" section (alerts + default duration; closes F19). PR #6 (merged).
 
 ## New ideas (groomed in)
-- [ ] **F19 — Rest-timer Settings control + per-exercise default rest**
-  Surface the default rest seconds in Settings and allow an optional per-exercise
-  override; the active workout reads the per-exercise value when present. (Builds
-  on F1; complements F5 notifications.)
+- [x] **F19 — Rest-timer Settings control** — default rest duration now in Settings (done as part of F5, PR #6). Per-exercise override deferred (see F20).
+- [ ] **F20 — Per-exercise default rest override**
+  Optional per-exercise rest duration; the active workout reads it when present,
+  falling back to the global default. (Follow-up split out of F19.)
