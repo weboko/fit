@@ -213,8 +213,16 @@ final class DataExportService {
             try write(string: file.contents, to: url)
             urls.append(url)
         }
+
+        // Data dictionary: documents every CSV column, enum and derived formula so
+        // the bundle is self-describing for an external analyst/AI.
+        let dictURL = directory.appendingPathComponent(ExportFileName.dataDictionary)
+        try write(string: ExportSchema.markdown(), to: dictURL)
+        urls.append(dictURL)
+
         let manifestURL = directory.appendingPathComponent(ExportFileName.manifest)
-        let includedNames = files.map(\.name)
+        var includedNames = files.map(\.name)
+        includedNames.append(ExportFileName.dataDictionary)
         try writeManifest(into: manifestURL, request: request, data: data, includedFiles: includedNames)
         urls.append(manifestURL)
         return urls
@@ -248,6 +256,9 @@ final class DataExportService {
             try write(string: file.contents, to: staging.appendingPathComponent(file.name))
         }
 
+        // Data dictionary: self-describing schema for the bundle (after the CSVs).
+        try write(string: ExportSchema.markdown(), to: staging.appendingPathComponent(ExportFileName.dataDictionary))
+
         // JSON document.
         let jsonData = try JSONExporter.encode(data, request: request)
         do {
@@ -256,8 +267,9 @@ final class DataExportService {
             throw ExportError.fileWriteFailed(error.localizedDescription)
         }
 
-        // Manifest (lists the CSVs + the JSON file).
+        // Manifest (lists the CSVs + the data dictionary + the JSON file).
         var includedNames = csvFiles.map(\.name)
+        includedNames.append(ExportFileName.dataDictionary)
         includedNames.append(ExportFileName.json)
         try writeManifest(
             into: staging.appendingPathComponent(ExportFileName.manifest),
