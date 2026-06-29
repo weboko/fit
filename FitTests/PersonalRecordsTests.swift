@@ -1,31 +1,18 @@
 import Foundation
-import SwiftData
 import XCTest
 @testable import Fit
 
 /// Record-at-the-time detection: a set is judged only against earlier non-warmup
 /// sets of the same exercise, and a value is a PR when it strictly exceeds every
 /// earlier value of that kind (the first set producing a value is itself a PR).
-/// `@MainActor` for the in-memory SwiftData fixtures.
+/// `@MainActor` because the `Fixture` helpers are main-actor isolated.
 @MainActor
 final class PersonalRecordsTests: XCTestCase {
 
-    private var context: ModelContext!
     private let t0 = Date(timeIntervalSince1970: 1_000_000)
-
-    override func setUp() {
-        super.setUp()
-        context = Fixture.emptyContext()
-    }
-
-    override func tearDown() {
-        context = nil
-        super.tearDown()
-    }
 
     private func set(_ weightKg: Double, _ reps: Int, offset: TimeInterval, warmup: Bool = false) -> WorkoutSet {
         Fixture.externalSet(
-            in: context,
             weightKg: weightKg,
             reps: reps,
             isWarmup: warmup,
@@ -92,13 +79,15 @@ final class PersonalRecordsTests: XCTestCase {
     }
 
     func testCurrentReturnsAllTimeBestPerKind() {
-        let exercise = Fixture.exercise(in: context)
-        let s1 = Fixture.externalSet(in: context, weightKg: 80, reps: 5, timestamp: t0, exercise: exercise)
-        let s2 = Fixture.externalSet(in: context, weightKg: 100, reps: 3,
+        let exercise = Fixture.exercise()
+        let s1 = Fixture.externalSet(weightKg: 80, reps: 5, timestamp: t0, exercise: exercise)
+        let s2 = Fixture.externalSet(weightKg: 100, reps: 3,
                                      timestamp: t0.addingTimeInterval(100), exercise: exercise)
-        let s3 = Fixture.externalSet(in: context, weightKg: 60, reps: 15,
+        let s3 = Fixture.externalSet(weightKg: 60, reps: 15,
                                      timestamp: t0.addingTimeInterval(200), exercise: exercise)
-        _ = (s1, s3)
+        // Un-inserted models don't auto-populate the inverse relationship, so wire
+        // the sets onto the exercise explicitly for `current(for:)` to read them.
+        exercise.sets = [s1, s2, s3]
 
         let current = PersonalRecords.current(for: exercise)
         XCTAssertEqual(current[.load]?.id, s2.id)   // heaviest = 100

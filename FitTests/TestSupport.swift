@@ -1,30 +1,21 @@
 import Foundation
-import SwiftData
 import XCTest
 @testable import Fit
 
-/// Shared helpers for building hermetic, in-memory SwiftData fixtures.
+/// Shared helpers for building hermetic test fixtures.
 ///
-/// `WorkoutSet` and `Exercise` are `@Model` types, so even though the values we
-/// assert on (`effectiveLoadKg`, `volumeKg`, …) are pure arithmetic, the objects
-/// must live in a `ModelContext`. We use `PersistenceController.makePreviewContainer(seeded:false)`
-/// for an empty, in-memory store (no CloudKit, no disk, no network). It is
-/// `@MainActor`, so every test class that uses these helpers is `@MainActor`.
+/// `WorkoutSet` and `Exercise` are `@Model` types, but the values we assert on
+/// (`effectiveLoadKg`, `volumeKg`, …) are pure arithmetic over stored/computed
+/// properties. SwiftData supports reading those on *un-inserted* model instances,
+/// so the fixtures need no `ModelContext` and no container at all (avoiding the
+/// test-host's CloudKit container entirely).
 @MainActor
 enum Fixture {
 
-    /// A fresh, empty, in-memory model context for one test.
-    static func emptyContext() -> ModelContext {
-        let container = PersistenceController.makePreviewContainer(seeded: false)
-        return container.mainContext
-    }
-
-    /// Insert an external-load `WorkoutSet` (the common barbell case) into `context`.
+    /// Build an external-load `WorkoutSet` (the common barbell case).
     /// `weightKg`/`reps`/`isWarmup` are set as properties after init, matching the
     /// real model (the initializer only takes identity + mode + source).
-    @discardableResult
     static func externalSet(
-        in context: ModelContext,
         weightKg: Double?,
         reps: Int?,
         isWarmup: Bool = false,
@@ -39,19 +30,14 @@ enum Fixture {
         set.weightKg = weightKg
         set.reps = reps
         set.isWarmup = isWarmup
-        context.insert(set)
         return set
     }
 
-    /// Insert a bare `Exercise` into `context`.
-    @discardableResult
+    /// Build a bare `Exercise`.
     static func exercise(
-        in context: ModelContext,
         name: String = "Bench Press",
         primaryMuscles: [MuscleGroup] = [.chest]
     ) -> Exercise {
-        let ex = Exercise(canonicalName: name, primaryMuscles: primaryMuscles)
-        context.insert(ex)
-        return ex
+        Exercise(canonicalName: name, primaryMuscles: primaryMuscles)
     }
 }
