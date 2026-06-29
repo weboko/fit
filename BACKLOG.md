@@ -23,26 +23,6 @@ item ships as its own pull request, based on the previous (merged) work on
 > Grooming below folds in that audit. The "Later" tier is no longer blind: every
 > PR is compiled by CI before merge.
 
-- [ ] **F29 — Export data dictionary (`SCHEMA.md` in the export bundle)** (next up)
-  On-mission: the SPEC's whole point is exporting "cleanly so an external AI can
-  analyze it" (§12, §30). Column *names* are defined but their *semantics* aren't
-  self-evident. Ship a `data_dictionary.md` inside the ZIP bundle documenting each
-  CSV file, every column (incl. the spec ones + the derived extras), units (kg,
-  seconds, ISO-8601/timezone), the **0–5 effort/energy/stress scales**, and every
-  enum's allowed values + meaning (`weight_mode`, `limiter`, `form_quality`,
-  `pain_*`, `food_timing`, `caffeine`, `entry_type`, `source`, …) and the
-  derived-column formulas (effective load, volume, Epley est-1RM). Reference it
-  from the manifest's `included_files`. Additive, Export-module-only, no model
-  change. Add an F28-style test asserting the dictionary documents every exported
-  column (ties the doc to the contract).
-  > _Re-groomed from the original F29 (import/zone regression tests): the import
-  > test needs a `ModelContext` (per-test SwiftData containers crash the test
-  > host — the F16 issue; unblocking needs risky `@main` surgery), and the zone
-  > math is a `private` HealthKit method. Both are low-value-for-the-risk. The
-  > data dictionary is higher-value, on-mission, and low-risk. Zone-math could get
-  > a test later if the bucketing is extracted to a pure internal function (minor,
-  > deferred)._
-
 > **Product-state note (ruthless-PM honesty):** after 8 features this session the
 > app is **strongly SPEC-coherent** (per the audit), compile-gated AND test-gated
 > on StatsKit / PR detection / CSV parsing / the export contract. The genuinely
@@ -52,7 +32,8 @@ item ships as its own pull request, based on the previous (merged) work on
 > for new direction over shipping noise.
 
 ## Now (next up) — ROI-ranked
-- _(F29 active; then the queue is genuinely thin — see the product-state note.)_
+- _(Idle — F29 shipped. The queue is genuinely thin; see the product-state note.
+  Prefer pausing for new direction over manufacturing low-value work.)_
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -87,6 +68,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F29 — Export data dictionary (`data_dictionary.md` in the bundle)** — ships a self-describing schema inside the CSV and ZIP export bundles so an external AI can interpret the data unambiguously (SPEC §12, §30). New `Fit/Export/ExportSchema.swift` (`enum ExportSchema.markdown()`, filename `ExportFileName.dataDictionary = "data_dictionary.md"`): an intro (units = kg / seconds / ISO-8601+timezone; only weight+reps are ever required), one `##` section per CSV file with a `column | meaning | type/units/allowed-values` table covering every emitted column (spec + derived: sets `effective_load_kg`/`volume_kg`/`estimated_1rm_kg`/`superset_group`; workouts `timezone`/`is_backfilled`; exercises `is_goal_exercise`/`is_favorite`; health_workouts `linked_workout_id`), a 0–5 effort/energy/stress Scales section (labels read live from `EffortScale`/`EnergyScale`/`StressScale`), and a Derived-columns section with the real formulas (effective load per weight mode, volume = load×reps, Epley 1RM = load×(1+reps/30), reps==1 ⇒ load). Enum allowed-values are read live from the `DisplayableOption` `allCases`/`rawValue`/`displayName` so the doc can't drift. Wired into BOTH `writeCSVBundle` and `writeZip` after the CSVs and before the manifest, and appended to the manifest's `included_files` (JSON-only path left untouched — a markdown dict doesn't fit a lone JSON). New `FitTests/ExportSchemaTests.swift` (context-free, no `ModelContext`): extracts every CSV header the F28 way (`CSVExporter.<file>(emptyDataSet)` + `CSVParser.parse`) and asserts each column appears in the markdown, asserts every raw value of every surfaced enum appears, plus the 0–5 scale labels and derived-column names. No model/column/manifest-schema change. PR #__ (pending).
 - [x] **F28 — Export contract tests** — locked the CSV data contract (SPEC §12 "critical", AI-facing). New `FitTests/ExportContractTests.swift` (context-free, no `ModelContext`): for every per-file builder in `CSVExporter` (workouts, sets, exercises, exercise_aliases, health_workouts, heart_rate_summary, body_weight, sleep, journal_entries) it hard-codes the SPEC §12.4–12.13 column list *independently* and asserts `Array(header.prefix(spec.count)) == spec` (parsed via the real `CSVParser`), so any rename/reorder/removal of a spec column fails the test while allowing the documented additive/derived trailing columns (effective_load_kg…superset_group, timezone, is_backfilled). Plus a small populated round-trip (hand-built `ExportDataSet`, relationships `set.workout`/`set.exercise`/`workout.sets`/`exercise.sets` wired explicitly) asserting ids, weight_kg, reps, effort, and comma-containing notes survive export→`parseKeyed`. Spec and exporter headers matched exactly (no drift found). PR #26 (merged).
 - [x] **F16 — Unit tests + CI test job** — added a `FitTests` XCTest target to the Xcode-16 file-system-synchronized project and a `macos-15` CI `test` job that runs it on the iPhone 16 simulator. **Build + Test both green.** Six hermetic, **context-free** test files (un-inserted `@Model` objects + plain arrays — no `ModelContext`, no Health/network/UserDefaults): StatsKit volume/bests/Epley-1RM, record-at-the-time PR detection, RFC-4180 CSV parse/parseKeyed, kg↔lb round-trip, CSVExporter→CSVParser round-trip. Took 5 CI iterations to wire the target (see the pbxproj checklist under "Later"). PR #25 (merged).
 - [x] **F23 — Data-rich accessibility summaries for `MetricLineChart`** — added an optional `accessibilitySummary: String?` parameter (default `nil`) to `MetricLineChart.init`; when supplied it becomes the chart's `.accessibilityLabel` (still one combined element via `.accessibilityElement(children: .ignore)`), otherwise the generic "Trend chart" label + the in-component fallback summary are kept, so every existing caller stays source-compatible. All three call sites now pass a metric-aware one-liner (count of sessions/entries, value range, latest value, trend up/down/flat, formatted like the chart's own labels with the unit symbol): exercise-detail (Best load / Est. 1RM, required target), body-weight trend, and goal-tracker trend (Est. 1RM / Best reps). Empty/single-point cases handled ("no data yet" / single value). No model/schema/export changes, no new deps. PR #24 (merged).

@@ -233,4 +233,5 @@ enum ExportFileName {
     static let journalEntries = "journal_entries.csv"
     static let manifest = "export_manifest.json"
     static let json = "fit_export.json"
+    static let dataDictionary = "data_dictionary.md"
 }
