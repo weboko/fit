@@ -24,14 +24,18 @@ item ships as its own pull request, based on the previous (merged) work on
 > PR is compiled by CI before merge.
 
 ## In progress
-- _(idle)_ — F16 (unit tests) has shipped. Remaining "Later" tier: **F14**
-  (home-screen widget — new WidgetKit extension target) and **F12**
-  (localization). Both still need their own focused iteration with a close CI
-  watch.
+- [ ] **F28 — Export contract tests** (next up)
+  Lock the app's most important, AI-facing surface. SPEC §12 calls the export
+  module "critical"; the external AI's whole analysis depends on the exact CSV
+  column names/order (§12.4–12.13) and JSON shape (§12.14). Add tests (no pbxproj
+  — the F16 target already exists) that assert every CSV file's exact header
+  against the spec, and a full model→CSV→import (and JSON→import) round-trip that
+  preserves data. Catches any silent break of the data contract. High value, low
+  risk.
 
 ## Now (next up) — ROI-ranked
-- _(empty — every compiler-safe additive item from the audit has shipped; the
-  remaining tier touches the Xcode project / a large surface, see "Later")_
+- _(F28 is the active item; queue otherwise drained of clearly high-ROI,
+  SPEC-aligned, low-risk work — see the grooming note below.)_
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -47,13 +51,22 @@ item ships as its own pull request, based on the previous (merged) work on
 > resolution fails.** Add the target to the **scheme's `BuildAction`** (not just
 > `Testables`/extension list). For extensions, also add the embed/copy phase to
 > the host. Validate by watching CI; expect 2–5 iterations.
-- [ ] **F14 — Home-screen widget (last workout / streak)**
-  Needs a new WidgetKit app-extension target (pbxproj change) — CI compiles it.
-  Note: a widget reads data via an App Group + a lightweight snapshot the app
-  writes (the SwiftData/CloudKit store isn't trivially shared) — keep the shared
-  surface tiny (e.g. last-workout summary + streak count in shared UserDefaults).
-- [ ] **F12 — Localization of UI strings (en, uk, ru, cs)**
-  Large cross-file string externalization + String Catalog.
+- [ ] **F14 — Home-screen widget (last workout / streak)** — _optional, NOT a
+  SPEC goal; low priority._ A widget is an engagement nicety for what the spec
+  defines as a low-friction capture + export tool (§1, §30); it needs a WidgetKit
+  extension target + App Group + a shared snapshot (the SwiftData/CloudKit store
+  isn't trivially shared). Only worth doing if genuinely wanted later; the ROI for
+  a single personal user is marginal versus the pbxproj/data-sharing cost.
+
+### Removed by grooming (ruthless-PM rationale)
+- **F12 — Localize UI strings (en/uk/ru/cs) — REMOVED as noise.** The SPEC's
+  multilingual requirement (§2, §10.2) is about *exercise-name data* being
+  arbitrary / mixed-language, which the app already fully supports (free-text
+  canonical names + aliases, non-English seed data). The spec never asks for a
+  localized UI, and the app is explicitly for **one personal user** (§1, §20) who
+  uses it in English. Translating UI chrome into four languages is high effort
+  with zero value for that user — it does not serve the spec's purpose and would
+  just be busywork. If a real second user ever needs it, revisit then.
 
 ## Done
 <!-- merged items move here with PR links -->
