@@ -150,6 +150,8 @@ struct FinishWorkoutView: View {
         // The workout is over; drop any template link so the planned section
         // does not reappear for a future session (F4).
         TemplateSupport.clearActiveTemplate()
+        // Refresh the home-screen widget's shared snapshot (F14).
+        WidgetSnapshotWriter.update(from: context)
         dismiss()
     }
 

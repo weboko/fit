@@ -37,6 +37,8 @@ struct ContentView: View {
         }
         .task {
             SeedData.seedIfNeeded(in: context)
+            // Keep the home-screen widget's shared snapshot fresh on launch (F14).
+            WidgetSnapshotWriter.update(from: context)
         }
         .fullScreenCover(isPresented: Binding(
             get: { !hasOnboarded },
