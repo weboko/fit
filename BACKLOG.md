@@ -26,14 +26,30 @@ item ships as its own pull request, based on the previous (merged) work on
 > **Product-state note (ruthless-PM honesty):** after 8 features this session the
 > app is **strongly SPEC-coherent** (per the audit), compile-gated AND test-gated
 > on StatsKit / PR detection / CSV parsing / the export contract. The genuinely
-> high-ROI, SPEC-aligned, low-risk queue is nearly exhausted. After F29, do NOT
-> manufacture low-value work: the only remaining candidates are the *optional*
-> widget (F14, not a spec goal) and spec "could-have-later" items. Prefer pausing
-> for new direction over shipping noise.
+> high-ROI, SPEC-aligned, low-risk queue is exhausted of pure data-quality work.
+> The remaining substantive feature is the **widget (F14)** — a legitimate
+> product evolution (engagement value), now promoted to "Now". After F14, the
+> backlog is genuinely empty of clearly-valuable work: prefer pausing for new
+> user direction over manufacturing noise (do NOT add UI localization, AI, social,
+> or other SPEC non-goals).
 
 ## Now (next up) — ROI-ranked
-- _(Idle — F29 shipped. The queue is genuinely thin; see the product-state note.
-  Prefer pausing for new direction over manufacturing low-value work.)_
+- [ ] **F14 — Home-screen widget (last workout + training streak)** (next up)
+  Re-promoted now that the higher-ROI export work (F25/F13/F28/F29) has shipped.
+  A glanceable widget is genuine engagement value for a training app (serves the
+  user's actual goal — progress in sport, §2 — even though it's not in the
+  original capture/export spec; the product is allowed to evolve). **Plan that
+  sidesteps the SwiftData/CloudKit sharing problem:** the app writes a tiny
+  snapshot (last-workout title + date, current weekly streak, maybe top set) to a
+  **shared App Group `UserDefaults`** on finish/launch; the **WidgetKit extension**
+  reads only that snapshot — no shared SwiftData store. Scope: new widget
+  extension target (follow the pbxproj checklist below — this is the first
+  *extension*, so also add the host's embed-app-extensions copy phase + the App
+  Group entitlement on both targets), a small `WidgetSnapshot` Codable in shared
+  UserDefaults, a `TimelineProvider`, and one or two widget sizes. Expect several
+  CI iterations (extension target is new territory); keep the shared surface tiny.
+  Build-only on CI (signing disabled) is fine — the App Group only matters at
+  runtime on device.
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -49,12 +65,8 @@ item ships as its own pull request, based on the previous (merged) work on
 > resolution fails.** Add the target to the **scheme's `BuildAction`** (not just
 > `Testables`/extension list). For extensions, also add the embed/copy phase to
 > the host. Validate by watching CI; expect 2–5 iterations.
-- [ ] **F14 — Home-screen widget (last workout / streak)** — _optional, NOT a
-  SPEC goal; low priority._ A widget is an engagement nicety for what the spec
-  defines as a low-friction capture + export tool (§1, §30); it needs a WidgetKit
-  extension target + App Group + a shared snapshot (the SwiftData/CloudKit store
-  isn't trivially shared). Only worth doing if genuinely wanted later; the ROI for
-  a single personal user is marginal versus the pbxproj/data-sharing cost.
+- _(F14 promoted to "Now (next up)" above — it's the remaining substantive
+  feature.)_
 
 ### Removed by grooming (ruthless-PM rationale)
 - **F12 — Localize UI strings (en/uk/ru/cs) — REMOVED as noise.** The SPEC's
