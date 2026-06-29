@@ -24,18 +24,11 @@ item ships as its own pull request, based on the previous (merged) work on
 > PR is compiled by CI before merge.
 
 ## In progress
-- [ ] **F28 — Export contract tests** (next up)
-  Lock the app's most important, AI-facing surface. SPEC §12 calls the export
-  module "critical"; the external AI's whole analysis depends on the exact CSV
-  column names/order (§12.4–12.13) and JSON shape (§12.14). Add tests (no pbxproj
-  — the F16 target already exists) that assert every CSV file's exact header
-  against the spec, and a full model→CSV→import (and JSON→import) round-trip that
-  preserves data. Catches any silent break of the data contract. High value, low
-  risk.
+- _(idle — queue drained of clearly high-ROI, SPEC-aligned, low-risk work.)_
 
 ## Now (next up) — ROI-ranked
-- _(F28 is the active item; queue otherwise drained of clearly high-ROI,
-  SPEC-aligned, low-risk work — see the grooming note below.)_
+- _(queue otherwise drained of clearly high-ROI, SPEC-aligned, low-risk work —
+  see the grooming note below.)_
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -70,6 +63,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F28 — Export contract tests** — locked the CSV data contract (SPEC §12 "critical", AI-facing). New `FitTests/ExportContractTests.swift` (context-free, no `ModelContext`): for every per-file builder in `CSVExporter` (workouts, sets, exercises, exercise_aliases, health_workouts, heart_rate_summary, body_weight, sleep, journal_entries) it hard-codes the SPEC §12.4–12.13 column list *independently* and asserts `Array(header.prefix(spec.count)) == spec` (parsed via the real `CSVParser`), so any rename/reorder/removal of a spec column fails the test while allowing the documented additive/derived trailing columns (effective_load_kg…superset_group, timezone, is_backfilled). Plus a small populated round-trip (hand-built `ExportDataSet`, relationships `set.workout`/`set.exercise`/`workout.sets`/`exercise.sets` wired explicitly) asserting ids, weight_kg, reps, effort, and comma-containing notes survive export→`parseKeyed`. Spec and exporter headers matched exactly (no drift found). PR #__ (pending).
 - [x] **F16 — Unit tests + CI test job** — added a `FitTests` XCTest target to the Xcode-16 file-system-synchronized project and a `macos-15` CI `test` job that runs it on the iPhone 16 simulator. **Build + Test both green.** Six hermetic, **context-free** test files (un-inserted `@Model` objects + plain arrays — no `ModelContext`, no Health/network/UserDefaults): StatsKit volume/bests/Epley-1RM, record-at-the-time PR detection, RFC-4180 CSV parse/parseKeyed, kg↔lb round-trip, CSVExporter→CSVParser round-trip. Took 5 CI iterations to wire the target (see the pbxproj checklist under "Later"). PR #25 (merged).
 - [x] **F23 — Data-rich accessibility summaries for `MetricLineChart`** — added an optional `accessibilitySummary: String?` parameter (default `nil`) to `MetricLineChart.init`; when supplied it becomes the chart's `.accessibilityLabel` (still one combined element via `.accessibilityElement(children: .ignore)`), otherwise the generic "Trend chart" label + the in-component fallback summary are kept, so every existing caller stays source-compatible. All three call sites now pass a metric-aware one-liner (count of sessions/entries, value range, latest value, trend up/down/flat, formatted like the chart's own labels with the unit symbol): exercise-detail (Best load / Est. 1RM, required target), body-weight trend, and goal-tracker trend (Est. 1RM / Best reps). Empty/single-point cases handled ("no data yet" / single value). No model/schema/export changes, no new deps. PR #24 (merged).
 - [x] **F27 — Remove dead `suggestedWorkouts`** — deleted the unused `HealthImportService.suggestedWorkouts(for:in:)`; `HealthLinkSection` already finds overlaps via `@Query` + `hw.overlaps(session:)` (DRY). PR #23 (merged).
