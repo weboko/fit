@@ -54,3 +54,30 @@ jobs:
             DEVELOPMENT_TEAM="" \
             ONLY_ACTIVE_ARCH=NO \
             build
+
+  test:
+    name: Test (iOS Simulator, unsigned)
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: xcodebuild -version
+
+      - name: Available simulators (debug aid)
+        run: xcrun simctl list devices available | grep -i iphone || true
+
+      - name: Run unit tests on iOS Simulator (no signing)
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Fit.xcodeproj \
+            -scheme Fit \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM=""
