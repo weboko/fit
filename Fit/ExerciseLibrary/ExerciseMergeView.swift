@@ -120,6 +120,24 @@ struct ExerciseMergeView: View {
     private func performMerge() {
         let toMerge = mergeCandidates.filter { selectedIDs.contains($0.id) }
         guard !toMerge.isEmpty else { return }
+        ExerciseMerge.merge(toMerge, into: canonical, context: context)
+        try? context.save()
+        dismiss()
+    }
+}
+
+/// The pure merge mechanics, extracted from `ExerciseMergeView` so they are
+/// unit-testable with a plain `ModelContext` (the View itself can't be driven
+/// from a test). The View calls this and owns the save/dismiss; the behaviour is
+/// unchanged (spec §21):
+/// - every set of a merged exercise is reassigned to the canonical
+///   (`exerciseNameAtTime` left as the historical snapshot),
+/// - the merged exercise's canonical name and aliases become aliases on the
+///   canonical (deduped case-insensitively against its existing names),
+/// - the merged `Exercise` objects are deleted (cascade removes their aliases).
+enum ExerciseMerge {
+    static func merge(_ duplicates: [Exercise], into canonical: Exercise, context: ModelContext) {
+        guard !duplicates.isEmpty else { return }
 
         // Names already present on the canonical (canonical + aliases), lowercased,
         // so we don't create duplicate aliases.
@@ -135,7 +153,7 @@ struct ExerciseMergeView: View {
             context.insert(alias)
         }
 
-        for merged in toMerge {
+        for merged in duplicates where merged.id != canonical.id {
             // Move every set to the canonical exercise; keep exerciseNameAtTime.
             for set in merged.sets ?? [] {
                 set.exercise = canonical
@@ -152,8 +170,6 @@ struct ExerciseMergeView: View {
         }
 
         canonical.touch()
-        try? context.save()
-        dismiss()
     }
 }
 

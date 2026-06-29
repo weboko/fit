@@ -23,8 +23,24 @@ enum PersistenceController {
         TemplateItem.self,
     ])
 
+    /// True when the process is hosted by XCTest (the test host launches the app).
+    static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
+    /// One shared in-memory container for the whole test process (host app + unit
+    /// tests). A SECOND container alongside the app's CloudKit one crashes the host
+    /// (F16), so under XCTest everything uses this one. Empty/unseeded.
+    static let testContainer: ModelContainer = {
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        return try! ModelContainer(for: schema, configurations: [config])
+    }()
+
     /// Builds the shared container used by the app.
     static func makeSharedContainer() -> ModelContainer {
+        // Under XCTest, the host app and the tests MUST share a single container
+        // (a second one for the same schema crashes the host — F16).
+        if isRunningTests { return testContainer }
         // 1. Preferred: local + CloudKit mirroring.
         if let container = try? makeContainer(cloudKit: true) {
             return container
