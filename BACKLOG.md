@@ -24,11 +24,25 @@ item ships as its own pull request, based on the previous (merged) work on
 > PR is compiled by CI before merge.
 
 ## In progress
-- _(idle — queue drained of clearly high-ROI, SPEC-aligned, low-risk work.)_
+- [ ] **F29 — Regression tests for import integrity (F26) + HR-zone math (F13)** (next up)
+  F28 locked the *export* contract; extend that protection to the other two
+  critical data paths. (1) Import: assert the F26 fix — a re-import that omits an
+  optional `title`/`notes` must NOT blank an existing populated value (the only
+  real data-loss bug found). (2) HR zones: assert F13's deterministic bucketing
+  (a known sample series at a given maxHR yields the expected per-zone seconds,
+  incl. the [0,60]s clamp and the <50% "no zone" floor) — exercise the pure math
+  without HealthKit. Low risk (the F16 test target exists), real value.
+
+> **Product-state note (ruthless-PM honesty):** after 8 features this session the
+> app is **strongly SPEC-coherent** (per the audit), compile-gated AND test-gated
+> on StatsKit / PR detection / CSV parsing / the export contract. The genuinely
+> high-ROI, SPEC-aligned, low-risk queue is nearly exhausted. After F29, do NOT
+> manufacture low-value work: the only remaining candidates are the *optional*
+> widget (F14, not a spec goal) and spec "could-have-later" items. Prefer pausing
+> for new direction over shipping noise.
 
 ## Now (next up) — ROI-ranked
-- _(queue otherwise drained of clearly high-ROI, SPEC-aligned, low-risk work —
-  see the grooming note below.)_
+- _(F29 active; then the queue is genuinely thin — see the product-state note.)_
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -63,7 +77,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
-- [x] **F28 — Export contract tests** — locked the CSV data contract (SPEC §12 "critical", AI-facing). New `FitTests/ExportContractTests.swift` (context-free, no `ModelContext`): for every per-file builder in `CSVExporter` (workouts, sets, exercises, exercise_aliases, health_workouts, heart_rate_summary, body_weight, sleep, journal_entries) it hard-codes the SPEC §12.4–12.13 column list *independently* and asserts `Array(header.prefix(spec.count)) == spec` (parsed via the real `CSVParser`), so any rename/reorder/removal of a spec column fails the test while allowing the documented additive/derived trailing columns (effective_load_kg…superset_group, timezone, is_backfilled). Plus a small populated round-trip (hand-built `ExportDataSet`, relationships `set.workout`/`set.exercise`/`workout.sets`/`exercise.sets` wired explicitly) asserting ids, weight_kg, reps, effort, and comma-containing notes survive export→`parseKeyed`. Spec and exporter headers matched exactly (no drift found). PR #__ (pending).
+- [x] **F28 — Export contract tests** — locked the CSV data contract (SPEC §12 "critical", AI-facing). New `FitTests/ExportContractTests.swift` (context-free, no `ModelContext`): for every per-file builder in `CSVExporter` (workouts, sets, exercises, exercise_aliases, health_workouts, heart_rate_summary, body_weight, sleep, journal_entries) it hard-codes the SPEC §12.4–12.13 column list *independently* and asserts `Array(header.prefix(spec.count)) == spec` (parsed via the real `CSVParser`), so any rename/reorder/removal of a spec column fails the test while allowing the documented additive/derived trailing columns (effective_load_kg…superset_group, timezone, is_backfilled). Plus a small populated round-trip (hand-built `ExportDataSet`, relationships `set.workout`/`set.exercise`/`workout.sets`/`exercise.sets` wired explicitly) asserting ids, weight_kg, reps, effort, and comma-containing notes survive export→`parseKeyed`. Spec and exporter headers matched exactly (no drift found). PR #26 (merged).
 - [x] **F16 — Unit tests + CI test job** — added a `FitTests` XCTest target to the Xcode-16 file-system-synchronized project and a `macos-15` CI `test` job that runs it on the iPhone 16 simulator. **Build + Test both green.** Six hermetic, **context-free** test files (un-inserted `@Model` objects + plain arrays — no `ModelContext`, no Health/network/UserDefaults): StatsKit volume/bests/Epley-1RM, record-at-the-time PR detection, RFC-4180 CSV parse/parseKeyed, kg↔lb round-trip, CSVExporter→CSVParser round-trip. Took 5 CI iterations to wire the target (see the pbxproj checklist under "Later"). PR #25 (merged).
 - [x] **F23 — Data-rich accessibility summaries for `MetricLineChart`** — added an optional `accessibilitySummary: String?` parameter (default `nil`) to `MetricLineChart.init`; when supplied it becomes the chart's `.accessibilityLabel` (still one combined element via `.accessibilityElement(children: .ignore)`), otherwise the generic "Trend chart" label + the in-component fallback summary are kept, so every existing caller stays source-compatible. All three call sites now pass a metric-aware one-liner (count of sessions/entries, value range, latest value, trend up/down/flat, formatted like the chart's own labels with the unit symbol): exercise-detail (Best load / Est. 1RM, required target), body-weight trend, and goal-tracker trend (Est. 1RM / Best reps). Empty/single-point cases handled ("no data yet" / single value). No model/schema/export changes, no new deps. PR #24 (merged).
 - [x] **F27 — Remove dead `suggestedWorkouts`** — deleted the unused `HealthImportService.suggestedWorkouts(for:in:)`; `HealthLinkSection` already finds overlaps via `@Query` + `hw.overlaps(session:)` (DRY). PR #23 (merged).
