@@ -60,10 +60,24 @@
 		};
 		FE300000000000000000D1 /* FitWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FE300000000000000000DE /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
 			path = FitWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FE300000000000000000DE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				FitWidget.entitlements,
+			);
+			target = FE300000000000000000D2 /* FitWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		FE10000000000000000000A8 /* Frameworks */ = {
