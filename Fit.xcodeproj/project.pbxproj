@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		FE300000000000000000DD /* FitWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE300000000000000000D6 /* FitWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		FE200000000000000000CB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,11 +18,33 @@
 			remoteGlobalIDString = FE10000000000000000000A5;
 			remoteInfo = Fit;
 		};
+		FE300000000000000000DB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE10000000000000000000A6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE300000000000000000D2;
+			remoteInfo = FitWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FE300000000000000000DC /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FE300000000000000000DD /* FitWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		FE10000000000000000000A4 /* Fit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE200000000000000000C6 /* FitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE300000000000000000D6 /* FitWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FitWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +58,26 @@
 			path = FitTests;
 			sourceTree = "<group>";
 		};
+		FE300000000000000000D1 /* FitWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FE300000000000000000DE /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			path = FitWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FE300000000000000000DE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				FitWidget.entitlements,
+			);
+			target = FE300000000000000000D2 /* FitWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		FE10000000000000000000A8 /* Frameworks */ = {
@@ -49,6 +94,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FE300000000000000000D4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,6 +109,7 @@
 			children = (
 				FE10000000000000000000A2 /* Fit */,
 				FE200000000000000000C1 /* FitTests */,
+				FE300000000000000000D1 /* FitWidget */,
 				FE10000000000000000000A3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,6 +119,7 @@
 			children = (
 				FE10000000000000000000A4 /* Fit.app */,
 				FE200000000000000000C6 /* FitTests.xctest */,
+				FE300000000000000000D6 /* FitWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,10 +134,12 @@
 				FE10000000000000000000A7 /* Sources */,
 				FE10000000000000000000A8 /* Frameworks */,
 				FE10000000000000000000A9 /* Resources */,
+				FE300000000000000000DC /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				FE300000000000000000DA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				FE10000000000000000000A2 /* Fit */,
@@ -114,6 +170,26 @@
 			productReference = FE200000000000000000C6 /* FitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		FE300000000000000000D2 /* FitWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE300000000000000000D7 /* Build configuration list for PBXNativeTarget "FitWidget" */;
+			buildPhases = (
+				FE300000000000000000D3 /* Sources */,
+				FE300000000000000000D4 /* Frameworks */,
+				FE300000000000000000D5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				FE300000000000000000D1 /* FitWidget */,
+			);
+			name = FitWidget;
+			productName = FitWidget;
+			productReference = FE300000000000000000D6 /* FitWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -130,6 +206,9 @@
 					FE200000000000000000C2 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = FE10000000000000000000A5;
+					};
+					FE300000000000000000D2 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -148,6 +227,7 @@
 			targets = (
 				FE10000000000000000000A5 /* Fit */,
 				FE200000000000000000C2 /* FitTests */,
+				FE300000000000000000D2 /* FitWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -161,6 +241,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		FE200000000000000000C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE300000000000000000D5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -184,6 +271,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FE300000000000000000D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -191,6 +285,11 @@
 			isa = PBXTargetDependency;
 			target = FE10000000000000000000A5 /* Fit */;
 			targetProxy = FE200000000000000000CB /* PBXContainerItemProxy */;
+		};
+		FE300000000000000000DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FE300000000000000000D2 /* FitWidget */;
+			targetProxy = FE300000000000000000DB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -416,6 +515,52 @@
 			};
 			name = Release;
 		};
+		FE300000000000000000D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FitWidget/FitWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FitWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.weboko.fit.FitWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		FE300000000000000000D9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FitWidget/FitWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FitWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.weboko.fit.FitWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -442,6 +587,15 @@
 			buildConfigurations = (
 				FE200000000000000000C8 /* Debug */,
 				FE200000000000000000C9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE300000000000000000D7 /* Build configuration list for PBXNativeTarget "FitWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE300000000000000000D8 /* Debug */,
+				FE300000000000000000D9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

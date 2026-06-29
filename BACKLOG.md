@@ -34,22 +34,14 @@ item ships as its own pull request, based on the previous (merged) work on
 > or other SPEC non-goals).
 
 ## Now (next up) — ROI-ranked
-- [ ] **F14 — Home-screen widget (last workout + training streak)** (next up)
-  Re-promoted now that the higher-ROI export work (F25/F13/F28/F29) has shipped.
-  A glanceable widget is genuine engagement value for a training app (serves the
-  user's actual goal — progress in sport, §2 — even though it's not in the
-  original capture/export spec; the product is allowed to evolve). **Plan that
-  sidesteps the SwiftData/CloudKit sharing problem:** the app writes a tiny
-  snapshot (last-workout title + date, current weekly streak, maybe top set) to a
-  **shared App Group `UserDefaults`** on finish/launch; the **WidgetKit extension**
-  reads only that snapshot — no shared SwiftData store. Scope: new widget
-  extension target (follow the pbxproj checklist below — this is the first
-  *extension*, so also add the host's embed-app-extensions copy phase + the App
-  Group entitlement on both targets), a small `WidgetSnapshot` Codable in shared
-  UserDefaults, a `TimelineProvider`, and one or two widget sizes. Expect several
-  CI iterations (extension target is new territory); keep the shared surface tiny.
-  Build-only on CI (signing disabled) is fine — the App Group only matters at
-  runtime on device.
+- _(idle)_ The high-ROI, SPEC-aligned, low-risk queue is **empty**: every
+  data-quality item has shipped and F14 (the last substantive feature) is now in
+  Done. Per the product-state note above, prefer **pausing for new user
+  direction** over manufacturing noise — do NOT add UI localization, AI, social,
+  or other SPEC non-goals.
+
+## In progress
+- _(idle — nothing in flight)_
 
 ## Later — larger surface (now CI-compiled per PR, no longer blind)
 > Every PR is compiled by F24 CI before merge; land these one at a time and watch
@@ -65,8 +57,8 @@ item ships as its own pull request, based on the previous (merged) work on
 > resolution fails.** Add the target to the **scheme's `BuildAction`** (not just
 > `Testables`/extension list). For extensions, also add the embed/copy phase to
 > the host. Validate by watching CI; expect 2–5 iterations.
-- _(F14 promoted to "Now (next up)" above — it's the remaining substantive
-  feature.)_
+- _(F14 shipped — see Done. The backlog is now genuinely empty of
+  clearly-valuable, SPEC-aligned work.)_
 
 ### Removed by grooming (ruthless-PM rationale)
 - **F12 — Localize UI strings (en/uk/ru/cs) — REMOVED as noise.** The SPEC's
@@ -80,6 +72,7 @@ item ships as its own pull request, based on the previous (merged) work on
 
 ## Done
 <!-- merged items move here with PR links -->
+- [x] **F14 — Home-screen widget (last workout + training streak)** — shipped the app's **first app extension**: a WidgetKit home-screen widget showing the last finished workout (title + relative date), the current weekly training streak ("🔥 5-week streak") and the top set, in `.systemSmall` + `.systemMedium`, with a "No workouts yet" empty state and the iOS-17 `.containerBackground(.fill.tertiary, for: .widget)`. Sidesteps the SwiftData/CloudKit sharing problem via a tiny **App Group `UserDefaults` snapshot** (`group.com.weboko.fit`): the app writes a `WidgetSnapshot` (Codable: lastWorkoutTitle/date, weeklyStreak, topSetSummary; ISO-8601 JSON under one key) on workout-finish (`FinishWorkoutView.finish()`) and on launch (`ContentView.task`), then `WidgetCenter.reloadAllTimelines()`; the widget reads only that snapshot — no shared store. New `FitWidget/` target (FitWidgetBundle/FitWidget/WidgetSnapshot/Info.plist/entitlements), app-side `Fit/Shared/WidgetSnapshotWriter.swift` (deterministic weekly-streak = consecutive ISO weeks back from this week each with ≥1 finished workout; reuses `WorkoutLoggingHelpers.topSets` + `Format.setSummary`). The `WidgetSnapshot` Codable shape is intentionally duplicated in both modules (no shared framework). pbxproj: added the app-extension target with the host's **Embed App Extensions** copy phase (dstSubfolderSpec 13) + explicit `FitWidget.appex` product `PBXFileReference` + an app→widget target dependency so the widget compiles as part of `xcodebuild build -scheme Fit`; App Group entitlement added to both targets. PR #__ (pending).
 - [x] **F29 — Export data dictionary (`data_dictionary.md` in the bundle)** — ships a self-describing schema inside the CSV and ZIP export bundles so an external AI can interpret the data unambiguously (SPEC §12, §30). New `Fit/Export/ExportSchema.swift` (`enum ExportSchema.markdown()`, filename `ExportFileName.dataDictionary = "data_dictionary.md"`): an intro (units = kg / seconds / ISO-8601+timezone; only weight+reps are ever required), one `##` section per CSV file with a `column | meaning | type/units/allowed-values` table covering every emitted column (spec + derived: sets `effective_load_kg`/`volume_kg`/`estimated_1rm_kg`/`superset_group`; workouts `timezone`/`is_backfilled`; exercises `is_goal_exercise`/`is_favorite`; health_workouts `linked_workout_id`), a 0–5 effort/energy/stress Scales section (labels read live from `EffortScale`/`EnergyScale`/`StressScale`), and a Derived-columns section with the real formulas (effective load per weight mode, volume = load×reps, Epley 1RM = load×(1+reps/30), reps==1 ⇒ load). Enum allowed-values are read live from the `DisplayableOption` `allCases`/`rawValue`/`displayName` so the doc can't drift. Wired into BOTH `writeCSVBundle` and `writeZip` after the CSVs and before the manifest, and appended to the manifest's `included_files` (JSON-only path left untouched — a markdown dict doesn't fit a lone JSON). New `FitTests/ExportSchemaTests.swift` (context-free, no `ModelContext`): extracts every CSV header the F28 way (`CSVExporter.<file>(emptyDataSet)` + `CSVParser.parse`) and asserts each column appears in the markdown, asserts every raw value of every surfaced enum appears, plus the 0–5 scale labels and derived-column names. No model/column/manifest-schema change. PR #27 (merged).
 - [x] **F28 — Export contract tests** — locked the CSV data contract (SPEC §12 "critical", AI-facing). New `FitTests/ExportContractTests.swift` (context-free, no `ModelContext`): for every per-file builder in `CSVExporter` (workouts, sets, exercises, exercise_aliases, health_workouts, heart_rate_summary, body_weight, sleep, journal_entries) it hard-codes the SPEC §12.4–12.13 column list *independently* and asserts `Array(header.prefix(spec.count)) == spec` (parsed via the real `CSVParser`), so any rename/reorder/removal of a spec column fails the test while allowing the documented additive/derived trailing columns (effective_load_kg…superset_group, timezone, is_backfilled). Plus a small populated round-trip (hand-built `ExportDataSet`, relationships `set.workout`/`set.exercise`/`workout.sets`/`exercise.sets` wired explicitly) asserting ids, weight_kg, reps, effort, and comma-containing notes survive export→`parseKeyed`. Spec and exporter headers matched exactly (no drift found). PR #26 (merged).
 - [x] **F16 — Unit tests + CI test job** — added a `FitTests` XCTest target to the Xcode-16 file-system-synchronized project and a `macos-15` CI `test` job that runs it on the iPhone 16 simulator. **Build + Test both green.** Six hermetic, **context-free** test files (un-inserted `@Model` objects + plain arrays — no `ModelContext`, no Health/network/UserDefaults): StatsKit volume/bests/Epley-1RM, record-at-the-time PR detection, RFC-4180 CSV parse/parseKeyed, kg↔lb round-trip, CSVExporter→CSVParser round-trip. Took 5 CI iterations to wire the target (see the pbxproj checklist under "Later"). PR #25 (merged).
