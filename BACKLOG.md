@@ -23,15 +23,25 @@ item ships as its own pull request, based on the previous (merged) work on
 > Grooming below folds in that audit. The "Later" tier is no longer blind: every
 > PR is compiled by CI before merge.
 
-## In progress
-- [ ] **F29 — Regression tests for import integrity (F26) + HR-zone math (F13)** (next up)
-  F28 locked the *export* contract; extend that protection to the other two
-  critical data paths. (1) Import: assert the F26 fix — a re-import that omits an
-  optional `title`/`notes` must NOT blank an existing populated value (the only
-  real data-loss bug found). (2) HR zones: assert F13's deterministic bucketing
-  (a known sample series at a given maxHR yields the expected per-zone seconds,
-  incl. the [0,60]s clamp and the <50% "no zone" floor) — exercise the pure math
-  without HealthKit. Low risk (the F16 test target exists), real value.
+- [ ] **F29 — Export data dictionary (`SCHEMA.md` in the export bundle)** (next up)
+  On-mission: the SPEC's whole point is exporting "cleanly so an external AI can
+  analyze it" (§12, §30). Column *names* are defined but their *semantics* aren't
+  self-evident. Ship a `data_dictionary.md` inside the ZIP bundle documenting each
+  CSV file, every column (incl. the spec ones + the derived extras), units (kg,
+  seconds, ISO-8601/timezone), the **0–5 effort/energy/stress scales**, and every
+  enum's allowed values + meaning (`weight_mode`, `limiter`, `form_quality`,
+  `pain_*`, `food_timing`, `caffeine`, `entry_type`, `source`, …) and the
+  derived-column formulas (effective load, volume, Epley est-1RM). Reference it
+  from the manifest's `included_files`. Additive, Export-module-only, no model
+  change. Add an F28-style test asserting the dictionary documents every exported
+  column (ties the doc to the contract).
+  > _Re-groomed from the original F29 (import/zone regression tests): the import
+  > test needs a `ModelContext` (per-test SwiftData containers crash the test
+  > host — the F16 issue; unblocking needs risky `@main` surgery), and the zone
+  > math is a `private` HealthKit method. Both are low-value-for-the-risk. The
+  > data dictionary is higher-value, on-mission, and low-risk. Zone-math could get
+  > a test later if the bucketing is extracted to a pure internal function (minor,
+  > deferred)._
 
 > **Product-state note (ruthless-PM honesty):** after 8 features this session the
 > app is **strongly SPEC-coherent** (per the audit), compile-gated AND test-gated
